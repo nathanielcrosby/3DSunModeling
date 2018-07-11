@@ -2,14 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors
 from mpl_toolkits.mplot3d import Axes3D
-#import sunpy.io as io
+import sunpy.io as io
 from matplotlib._png import read_png
 from PIL import Image
 
-#data = io.read_file('2007_02_02__12_02_58_608__HINODE_XRT_COMP.jp2', filetype='jp2')
-#header = io.read_file_header('2007_02_02__12_02_58_608__HINODE_XRT_COMP.jp2')
-
-headerList = []
+data = io.read_file('2007_02_02__12_02_58_608__HINODE_XRT_COMP.jp2', filetype='jp2')
+header = io.read_file_header('2007_02_02__12_02_58_608__HINODE_XRT_COMP.jp2')
 
 dist_earth_to_sun = 148000000 #in km, changes depending on time
 degree_per_arcsec = 1./3600. 
@@ -18,11 +16,11 @@ km_per_pixel = (np.sin((degree_per_arcsec * rad_per_degree / 2))
  * dist_earth_to_sun * 2)
 square_km_per_pixel = km_per_pixel**2
 
-#XCEN = header[0].__getitem__('XCEN')
-#YCEN = header[0].__getitem__('YCEN')
-#DATEOBS = header[0].__getitem__('CTIME')
-#NAXIS1 = header[0].__getitem__('NAXIS1')
-#NAXIS2 = header[0].__getitem__('NAXIS2')
+XCEN = header[0].__getitem__('XCEN')
+YCEN = header[0].__getitem__('YCEN')
+DATEOBS = header[0].__getitem__('CTIME')
+NAXIS1 = header[0].__getitem__('NAXIS1')
+NAXIS2 = header[0].__getitem__('NAXIS2')
 
 #image = data[0][0] #gets the data from the jp2 file, however this format does not work with the the plot surface, instead it is converted to a png in an oustide program
 image = read_png('2007_02_02__12_02_58_608__HINODE_XRT_COMP.png')
@@ -30,22 +28,26 @@ image = read_png('2007_02_02__12_02_58_608__HINODE_XRT_COMP.png')
 xDimen = image.shape[0]
 yDimen = image.shape[1]
 
+xDimen_km = xDimen * km_per_pixel
+yDimen_km = yDimen * km_per_pixel
+
 #Used for the 2d plane in a 3d diagram
-#x, y = np.mgrid[0:image.shape[0], 0:image.shape[1]]
-#z = np.zeros((image.shape[0], image.shape[1]))
+#x, y = np.mgrid[0:xDimen, 0:yDimen]
+#z = np.zeros((xDimen, yDimen))
 
 r = 900.        #determines the size of the sphere, should be radius of the sun in image
+r_km = r * km_per_pixel
 
-x, y = np.mgrid[0:xDimen, 0:yDimen]
+x, y = np.mgrid[0:xDimen_km:(xDimen_km/xDimen), 0:yDimen_km:(yDimen_km/yDimen)]
 zlist = []
 
-for xpoint in range(xDimen):
+for xpoint in range(int(xDimen)):
 	xrow = []
-	for ypoint in range(yDimen):
-		if(np.sqrt((xpoint-(xDimen/2.))**2. + (ypoint-(yDimen/2.))**2.) >= r):
+	for ypoint in range(int(yDimen)):
+		if(np.sqrt((xpoint * km_per_pixel - (xDimen_km/2.))**2. + (ypoint * km_per_pixel - (yDimen_km/2.))**2.) >= r_km):
 			xrow.append(0)
 		else:
-			xrow.append(np.sqrt(r**2. - (xpoint-(xDimen/2.))**2. - (ypoint-(yDimen/2.))**2.))
+			xrow.append(np.sqrt(r_km**2. - (xpoint * km_per_pixel - (xDimen_km/2.))**2. - (ypoint * km_per_pixel - (yDimen_km/2.))**2.))
 	zlist.append(xrow)
 
 z = np.asarray(zlist)
@@ -67,9 +69,13 @@ fig = plt.figure(figsize=(10.,10.))
 ax2 = fig.add_subplot(111, projection='3d')
 
 #uniform scaling
-ax2.set_xlim3d(0, 2048)
-ax2.set_ylim3d(0, 2048)
-ax2.set_zlim3d(0, 2048)
+ax2.set_xlim3d(0, 1500000)
+ax2.set_ylim3d(0, 1500000)
+ax2.set_zlim3d(0, 1500000)
+
+ax2.set_xlabel('km')
+ax2.set_ylabel('km')
+ax2.set_zlabel('km')
 
 #rstride and cstride determine how frequently values are taken from the arrays and plotted, lower stride yields higher resolution
 #norm is the instance of the Normalize class that is used to map the inputted values to actual colors, this input is not needed
@@ -77,8 +83,9 @@ ax2.set_zlim3d(0, 2048)
 #facecolors sets the image to be drawn and plt.cm.jet normalizes the colors.
 #	They then match up with the cmap inputted which is the same
 #antialiased determines whether or not the figure is drawn with antialiasing
+#vmin and vmax determine the range of the colormap: they're not necessary
 
-ax2.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.gist_heat,
-facecolors=plt.cm.gist_heat(image))#, norm=norm)
+ax2.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.gist_heat, #plt.cm.jet uses a different color map with a full spectrum
+facecolors=plt.cm.gist_heat(image))#, vmin=0., vmax=3000.)#, norm=norm)
 plt.show()
-plt.savefig('3d.png')
+#plt.savefig('3d.png')
