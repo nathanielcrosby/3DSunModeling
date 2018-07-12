@@ -94,15 +94,17 @@ ax2.set_ylabel('km')
 ax2.set_zlabel('km')
 
 #Bright features stand out
-scale_factor = 0.15 * r_km
+scale_factor = 0.2 * r_km
 minimum_intensity_threshold = 0.35 #intensity values must exceed this in order to 
-	#become protrusions
+	#become protrusions. This prevents inflation to maintain spherical shape
 buffer_zone = 100 * km_per_pixel #region around outside that has no protrusions to
-	#prevent warping
+	#prevent warping and inflating around edges
 
 #This for loop goes through all the points and determines whether or not it is on the
 #hemisphere and whether or not the intensiy surpasses the threshold. If not, then no multiplier 
 #is added. If yes then a multiplier is created based on the intensity of that pixel
+#It also used a minimum intensity threshold to maintain spherical shape and Normalizes 
+#the values about that threshold
 add = []
 
 for xpoint in range(xDimen):
@@ -113,7 +115,8 @@ for xpoint in range(xDimen):
 		 or image[xpoint][ypoint] < minimum_intensity_threshold):
 		 	row.append(0)
 		 else:
-			row.append(scale_factor * image[xpoint][ypoint])
+			row.append(scale_factor * ((image[xpoint][ypoint] - minimum_intensity_threshold)
+			 / (1 - minimum_intensity_threshold)))
 	add.append(row)
 
 #This for loop goes through the initial x, y, and z values and adds to their position 
