@@ -25,6 +25,8 @@ NAXIS2 = header[0].__getitem__('NAXIS2')
 
 #image = data[0][0] #gets the data from the jp2 file, however this format does not work 
 	#with the the plot surface, instead it is converted to a png in an oustide program
+
+#image data is already normalized to [0.0, 1.0]
 image = read_png('2007_02_02__12_02_58_608__HINODE_XRT_COMP.png')
 
 #pixel dimensions of the image
@@ -45,7 +47,7 @@ r_km = r * km_per_pixel #in km
 #x and y are arrays shaped the size of the pixel dimensions respectively
 	#they go from 0 to the dimension in km at intervals of the dimension in km/dimen in px
 	#This way each point lines up exactly to a pixel
-x, y = np.mgrid[0:xDimen_km:(xDimen_km/xDimen), 0:yDimen_km:(yDimen_km/yDimen)]
+x_init, y_init = np.mgrid[0:xDimen_km:(xDimen_km/xDimen), 0:yDimen_km:(yDimen_km/yDimen)]
 
 #This for loop uses the formula of a sphere (x**2 + y**2 + z**2 = r**2) in order to define
 	#z points that are 0 outside the radius and on the hemisphere inside the radius
@@ -64,7 +66,7 @@ for xpoint in range(int(xDimen)):
 	zlist.append(xrow)
 
 #plot surface requires an array
-z = np.asarray(zlist)
+z_init = np.asarray(zlist)
 
 fig = plt.figure(figsize=(10.,10.))
 
@@ -91,6 +93,43 @@ ax2.set_xlabel('km')
 ax2.set_ylabel('km')
 ax2.set_zlabel('km')
 
+#Bright features stand out
+scale_factor = 0.30 * r_km
+
+add = []
+
+for xpoint in range(xDimen):
+	row = []
+	for ypoint in range(xDimen):
+		 if(np.sqrt((xpoint * km_per_pixel - (xDimen_km/2.))**2. + (ypoint * km_per_pixel 
+		 - (yDimen_km/2.))**2.) >= r_km):
+		 	row.append(0)
+		 else:
+			row.append(scale_factor * image[xpoint][ypoint])
+	add.append(row)
+
+x_list_final = []
+y_list_final = []
+z_list_final = []
+
+for xpoint in range(xDimen):
+	xrow = []
+	yrow = []
+	zrow = []
+	for ypoint in range(yDimen):
+		xrow.append(x_init[xpoint][ypoint] + ((x_init[xpoint][ypoint] - (xDimen_km / 2))
+		 * (add[xpoint][ypoint] / xDimen_km)))
+		yrow.append(y_init[xpoint][ypoint] + ((y_init[xpoint][ypoint] - (yDimen_km / 2))
+		 * (add[xpoint][ypoint] / yDimen_km)))
+		zrow.append(z_init[xpoint][ypoint] + add[xpoint][ypoint])
+	x_list_final.append(xrow)
+	y_list_final.append(yrow)
+	z_list_final.append(zrow)
+
+x = np.asarray(x_list_final)
+y = np.asarray(y_list_final)
+z = np.asarray(z_list_final)
+
 #rstride and cstride determine how frequently values are taken from the arrays and 
 	#plotted, lower stride yields higher resolution
 #norm is the instance of the Normalize class that is used to map the inputted values to
@@ -102,8 +141,8 @@ ax2.set_zlabel('km')
 #antialiased determines whether or not the figure is drawn with antialiasing
 #vmin and vmax determine the range of the colormap: they're not necessary
 
-ax2.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.gist_heat,
-facecolors=plt.cm.gist_heat(image))#, vmin=0., vmax=3000.)#, norm=norm)
-#plt.cm.jet uses a different color map with a full spectrum
+ax2.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.jet,
+facecolors=plt.cm.jet(image))#, vmin=0., vmax=3000.)#, norm=norm)
+#plt.cm.gist_heat uses a different color map with a heat spectrum
 plt.show()
-#plt.savefig('3d.png')
+plt.savefig('3d.png')
