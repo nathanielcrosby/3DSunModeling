@@ -94,18 +94,23 @@ ax2.set_ylabel('km')
 ax2.set_zlabel('km')
 
 #Bright features stand out
-scale_factor = 0.30 * r_km
+scale_factor = 0.15 * r_km
+minimum_intensity_threshold = 0.35 #intensity values must exceed this in order to 
+	#become protrusions
+buffer_zone = 100 * km_per_pixel #region around outside that has no protrusions to
+	#prevent warping
 
-#This for loop goes through all the points and determines whether or not it is on the \
-	#hemisphere. If not, then no multiplier is added. If yes then a multiplier is created
-	#based on the intensity of that pixel
+#This for loop goes through all the points and determines whether or not it is on the
+#hemisphere and whether or not the intensiy surpasses the threshold. If not, then no multiplier 
+#is added. If yes then a multiplier is created based on the intensity of that pixel
 add = []
 
 for xpoint in range(xDimen):
 	row = []
 	for ypoint in range(xDimen):
-		 if(np.sqrt((xpoint * km_per_pixel - (xDimen_km/2.))**2. + (ypoint * km_per_pixel 
-		 - (yDimen_km/2.))**2.) >= r_km):
+		 if((np.sqrt((xpoint * km_per_pixel - (xDimen_km/2.))**2. + (ypoint * km_per_pixel 
+		 - (yDimen_km/2.))**2.) >= (r_km-buffer_zone)) 
+		 or image[xpoint][ypoint] < minimum_intensity_threshold):
 		 	row.append(0)
 		 else:
 			row.append(scale_factor * image[xpoint][ypoint])
@@ -153,4 +158,4 @@ ax2.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.
 facecolors=plt.cm.jet(image))#, vmin=0., vmax=3000.)#, norm=norm)
 #plt.cm.gist_heat uses a different color map with a heat spectrum
 plt.show()
-plt.savefig('3d.png')
+#plt.savefig('3d.png')
