@@ -96,6 +96,9 @@ ax2.set_zlabel('km')
 #Bright features stand out
 scale_factor = 0.30 * r_km
 
+#This for loop goes through all the points and determines whether or not it is on the \
+	#hemisphere. If not, then no multiplier is added. If yes then a multiplier is created
+	#based on the intensity of that pixel
 add = []
 
 for xpoint in range(xDimen):
@@ -108,6 +111,10 @@ for xpoint in range(xDimen):
 			row.append(scale_factor * image[xpoint][ypoint])
 	add.append(row)
 
+#This for loop goes through the initial x, y, and z values and adds to their position 
+	#based on the multipliers intensity. Only points on the hemisphere are added to
+	#x, y, and z are all added to so that the bright points go out of the sphere instead
+	#of just up which would be the case if just z was added to
 x_list_final = []
 y_list_final = []
 z_list_final = []
@@ -126,6 +133,7 @@ for xpoint in range(xDimen):
 	y_list_final.append(yrow)
 	z_list_final.append(zrow)
 
+#plot surface requires an array
 x = np.asarray(x_list_final)
 y = np.asarray(y_list_final)
 z = np.asarray(z_list_final)
