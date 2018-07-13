@@ -5,9 +5,12 @@ from mpl_toolkits.mplot3d import Axes3D
 import sunpy.io as io
 from matplotlib._png import read_png
 from PIL import Image
+import urllib
+import imageFinder
 
-data = io.read_file('2007_02_02__12_02_58_608__HINODE_XRT_COMP.jp2', filetype='jp2')
-header = io.read_file_header('2007_02_02__12_02_58_608__HINODE_XRT_COMP.jp2')
+date = '2007/02/02'
+
+data, header = imageFinder.file_finder(date)
 
 dist_earth_to_sun = 148000000 #in km, changes depending on time
 degree_per_arcsec = 1./3600. 
@@ -157,8 +160,8 @@ z = np.asarray(z_list_final)
 #antialiased determines whether or not the figure is drawn with antialiasing
 #vmin and vmax determine the range of the colormap: they're not necessary
 
-ax2.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.jet,
-facecolors=plt.cm.jet(image))#, vmin=0., vmax=3000.)#, norm=norm)
-#plt.cm.gist_heat uses a different color map with a heat spectrum
+ax2.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.hot,
+facecolors=plt.cm.hot(image))#, vmin=0., vmax=3000.)#, norm=norm)
+#plt.cm.jet uses a different color map with a full spectrum... gist_heat... hot
 plt.show()
 #plt.savefig('3d.png')
