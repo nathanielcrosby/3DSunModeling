@@ -1,14 +1,14 @@
-daimport sunpy.io as io
+import sunpy.io as io
 import subprocess
 import os
 
 def file_finder(date):
-''' This function takes in the date from the 3Dplot.py. It then uses this date to access
-the website that contains all of the XRT images. It uses a findFiles.sh bash script that
-attempts to download images of a certain url. It attempts to match an image with a date
-and if successful downloads the images for that date. It then turns the first image into
-an array and a header. If it was unsuccessful, it iterates through dates until it finds
-a day with pictures'''
+	''' This function takes in the date from the 3Dplot.py. It then uses this date to access
+	the website that contains all of the XRT images. It uses a findFiles.sh bash script that
+	attempts to download images of a certain url. It attempts to match an image with a date
+	and if successful downloads the images for that date. It then turns the first image into
+	an array and a header. If it was unsuccessful, it iterates through dates until it finds
+	a day with pictures'''
 	date = date
 	year = date[0:4]
 	month = date[5:7]
