@@ -9,25 +9,25 @@ import urllib
 import imageFinder
 from matplotlib import animation
 import makeMovie
-
+'''
 date = '2007/02/02'
 
 data, header = imageFinder.file_finder(date)
-
+'''
 dist_earth_to_sun = 148000000 #in km, changes depending on time
 degree_per_arcsec = 1./3600. 
 rad_per_degree = np.pi/180
 km_per_pixel = (np.sin((degree_per_arcsec * rad_per_degree / 2))
  * dist_earth_to_sun * 2)
 square_km_per_pixel = km_per_pixel**2
-
+'''
 #info from the header
 XCEN = header[0].__getitem__('XCEN')
 YCEN = header[0].__getitem__('YCEN')
 DATEOBS = header[0].__getitem__('CTIME')
 NAXIS1 = header[0].__getitem__('NAXIS1')
 NAXIS2 = header[0].__getitem__('NAXIS2')
-
+'''
 #image = data[0][0] #gets the data from the jp2 file, however this format does not work 
 	#with the the plot surface, instead it is converted to a png in an oustide program
 
@@ -99,11 +99,19 @@ ax.set_zlim3d(0, 1500000)
 plt.axis('off')
 
 #Bright features stand out
-scale_factor = 0.2 * r_km
-minimum_intensity_threshold = 0.35 #intensity values must exceed this in order to 
+scale_factor = 0.25 * r_km
+minimum_intensity_threshold = 0.25 #intensity values must exceed this in order to 
 	#become protrusions. This prevents inflation to maintain spherical shape
 buffer_zone = 100 * km_per_pixel #region around outside that has no protrusions to
 	#prevent warping and inflating around edges
+
+def log_scale(intensity):
+	return (scale_factor * ((10**((intensity - minimum_intensity_threshold) 
+	/ (1 - minimum_intensity_threshold))) - 1) * (1/9))
+
+def scale(intensity, exp=1):
+	return (scale_factor * ((intensity - minimum_intensity_threshold) 
+	/ (1 - minimum_intensity_threshold))**exp)
 
 #This for loop goes through all the points and determines whether or not it is on the
 #hemisphere and whether or not the intensiy surpasses the threshold. If not, then no multiplier 
@@ -120,8 +128,7 @@ for xpoint in range(xDimen):
 		 or image[xpoint][ypoint] < minimum_intensity_threshold):
 		 	row.append(0)
 		 else:
-			row.append(scale_factor * ((image[xpoint][ypoint] - minimum_intensity_threshold)
-			 / (1 - minimum_intensity_threshold)))
+			row.append(log_scale(image[xpoint][ypoint]))
 	add.append(row)
 
 #This for loop goes through the initial x, y, and z values and adds to their position 
@@ -162,15 +169,15 @@ z = np.asarray(z_list_final)
 #antialiased determines whether or not the figure is drawn with antialiasing
 #vmin and vmax determine the range of the colormap: they're not necessary
 
-ax.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.hot,
-facecolors=plt.cm.hot(image))#, vmin=0., vmax=3000.)
+ax.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.jet,
+facecolors=plt.cm.jet(image))#, vmin=0., vmax=3000.)
 #plt.cm.jet uses a different color map with a full spectrum... gist_heat... hot
 
-azim = np.linspace(0,360,300) # A list of angles between 0 and 360 rotation angle
-elev = np.linspace(90,0,300) # A list of angles between 90 and 0 elevation angle
+#azim = np.linspace(0,360,300) # A list of angles between 0 and 360 rotation angle
+#elev = np.linspace(90,0,300) # A list of angles between 90 and 0 elevation angle
 # create a movie with 10 frames per seconds and 'quality' 2000
 file = 'movie.gif' #name of movie
-makeMovie.rotanimate(ax, file, azim, elev, fps=30)
+#makeMovie.rotanimate(ax, file, azim, elev, fps=30)
 
-#plt.show()
+plt.show()
 #plt.savefig('3d.png')
