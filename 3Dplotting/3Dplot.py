@@ -7,6 +7,8 @@ from matplotlib._png import read_png
 from PIL import Image
 import urllib
 import imageFinder
+from matplotlib import animation
+import makeMovie
 
 date = '2007/02/02'
 
@@ -56,6 +58,7 @@ fig = plt.figure(figsize=(10.,10.))
 
 #The rest is for the 3D image with protrusions
 ax = fig.add_subplot(111, projection='3d')
+
 r = 900. #determines the size of the sphere, should be radius of the sun in image
 r_km = r * km_per_pixel #in km
 
@@ -88,9 +91,12 @@ ax.set_xlim3d(0, 1500000)
 ax.set_ylim3d(0, 1500000)
 ax.set_zlim3d(0, 1500000)
 
-ax.set_xlabel('km')
-ax.set_ylabel('km')
-ax.set_zlabel('km')
+#ax.set_xlabel('km')
+#ax.set_ylabel('km')
+#ax.set_zlabel('km')
+
+#no visible axis, good for movie
+plt.axis('off')
 
 #Bright features stand out
 scale_factor = 0.2 * r_km
@@ -159,5 +165,12 @@ z = np.asarray(z_list_final)
 ax.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.hot,
 facecolors=plt.cm.hot(image))#, vmin=0., vmax=3000.)
 #plt.cm.jet uses a different color map with a full spectrum... gist_heat... hot
-plt.show()
+
+azim = np.linspace(0,360,300) # A list of angles between 0 and 360 rotation angle
+elev = np.linspace(90,0,300) # A list of angles between 90 and 0 elevation angle
+# create a movie with 10 frames per seconds and 'quality' 2000
+file = 'movie.gif' #name of movie
+makeMovie.rotanimate(ax, file, azim, elev, fps=30)
+
+#plt.show()
 #plt.savefig('3d.png')
