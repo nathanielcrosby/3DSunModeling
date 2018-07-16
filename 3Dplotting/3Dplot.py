@@ -40,10 +40,22 @@ yDimen = image.shape[1]
 xDimen_km = xDimen * km_per_pixel
 yDimen_km = yDimen * km_per_pixel
 
+fig = plt.figure(figsize=(10.,10.))
+
+#2D drawing of the image
+#ax1 = fig.add_subplot(1, 1, 1)
+#ax1.imshow(image)
+#ax1.imshow(image, cmap=plt.cm.gist_heat, origin='lower', vmin=0., vmax=300.)
+#plt.show()
+#plt.savefig('2d.png')
+
 #Used for the 2d plane in a 3d diagram
 #x, y = np.mgrid[0:xDimen, 0:yDimen]
 #z = np.zeros((xDimen, yDimen))
+#ax2 = fig.add_subplot(111, projection='3d')
 
+#The rest is for the 3D image with protrusions
+ax = fig.add_subplot(111, projection='3d')
 r = 900. #determines the size of the sphere, should be radius of the sun in image
 r_km = r * km_per_pixel #in km
 
@@ -71,30 +83,14 @@ for xpoint in range(int(xDimen)):
 #plot surface requires an array
 z_init = np.asarray(zlist)
 
-fig = plt.figure(figsize=(10.,10.))
-
-#2D drawing of the image
-#ax1 = fig.add_subplot(1, 1, 1)
-#ax1.imshow(image)
-#ax1.imshow(image, cmap=plt.cm.gist_heat, origin='lower', vmin=0., vmax=300.)
-#plt.show()
-#plt.savefig('2d.png')
-
-#This has no effect if removed
-#The Normalize function that normalizes data into a 0.0 to 1.0 range
-#norm = matplotlib.colors.Normalize()
-
-#2D drawing in a 3D plane
-ax2 = fig.add_subplot(111, projection='3d')
-
 #uniform scaling
-ax2.set_xlim3d(0, 1500000)
-ax2.set_ylim3d(0, 1500000)
-ax2.set_zlim3d(0, 1500000)
+ax.set_xlim3d(0, 1500000)
+ax.set_ylim3d(0, 1500000)
+ax.set_zlim3d(0, 1500000)
 
-ax2.set_xlabel('km')
-ax2.set_ylabel('km')
-ax2.set_zlabel('km')
+ax.set_xlabel('km')
+ax.set_ylabel('km')
+ax.set_zlabel('km')
 
 #Bright features stand out
 scale_factor = 0.2 * r_km
@@ -160,8 +156,8 @@ z = np.asarray(z_list_final)
 #antialiased determines whether or not the figure is drawn with antialiasing
 #vmin and vmax determine the range of the colormap: they're not necessary
 
-ax2.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.hot,
-facecolors=plt.cm.hot(image))#, vmin=0., vmax=3000.)#, norm=norm)
+ax.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.hot,
+facecolors=plt.cm.hot(image))#, vmin=0., vmax=3000.)
 #plt.cm.jet uses a different color map with a full spectrum... gist_heat... hot
 plt.show()
 #plt.savefig('3d.png')
