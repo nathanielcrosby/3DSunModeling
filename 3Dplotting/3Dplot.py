@@ -9,25 +9,27 @@ import urllib
 import imageFinder
 from matplotlib import animation
 import makeMovie
-'''
+
 date = '2007/02/02'
 
+#calling imageFinder program to find the image of the set date
 data, header = imageFinder.file_finder(date)
-'''
+
+#this uses known values to approximate the number of km per pixel
 dist_earth_to_sun = 148000000 #in km, changes depending on time
 degree_per_arcsec = 1./3600. 
 rad_per_degree = np.pi/180
 km_per_pixel = (np.sin((degree_per_arcsec * rad_per_degree / 2))
  * dist_earth_to_sun * 2)
 square_km_per_pixel = km_per_pixel**2
-'''
+
 #info from the header
 XCEN = header[0].__getitem__('XCEN')
 YCEN = header[0].__getitem__('YCEN')
 DATEOBS = header[0].__getitem__('CTIME')
 NAXIS1 = header[0].__getitem__('NAXIS1')
 NAXIS2 = header[0].__getitem__('NAXIS2')
-'''
+
 #image = data[0][0] #gets the data from the jp2 file, however this format does not work 
 	#with the the plot surface, instead it is converted to a png in an oustide program
 
@@ -38,6 +40,7 @@ image = read_png('2007_02_02__12_02_58_608__HINODE_XRT_COMP.png')
 xDimen = image.shape[0]
 yDimen = image.shape[1]
 
+#Can be used to offset the radius if sun is not in center of image
 offsetX = 30. #px
 offsetY = -30. #px
 
@@ -45,12 +48,15 @@ offsetY = -30. #px
 xDimen_km = xDimen * km_per_pixel
 yDimen_km = yDimen * km_per_pixel
 
+#new calculated center of sun
 centerX = xDimen/2. - offsetX
 centerY = yDimen/2. - offsetY
 
+ #in km
 centerX_km = centerX * km_per_pixel
 centerY_km = centerY * km_per_pixel
 
+#creates figure
 fig = plt.figure(figsize=(10.,10.))
 
 #2D drawing of the image
@@ -81,9 +87,9 @@ x_init, y_init = np.mgrid[0:xDimen_km:(xDimen_km/xDimen), 0:yDimen_km:(yDimen_km
 	#this allows for the hemisphere of a certain radius coming out of the plane
 zlist = []
 
-for xpoint in range(int(xDimen)):
+for xpoint in range(xDimen):
 	xrow = []
-	for ypoint in range(int(yDimen)):
+	for ypoint in range(yDimen):
 		if(np.sqrt((xpoint * km_per_pixel - (centerX_km))**2. + (ypoint * km_per_pixel
 		 - (centerY_km))**2.) >= r_km):
 			xrow.append(0)
@@ -95,11 +101,12 @@ for xpoint in range(int(xDimen)):
 #plot surface requires an array
 z_init = np.asarray(zlist)
 
-#uniform scaling
+#uniform scaling of axes so that hemisphere is not stretched
 ax.set_xlim3d(0, 1500000)
 ax.set_ylim3d(0, 1500000)
 ax.set_zlim3d(0, 1500000)
 
+#labels axes
 #ax.set_xlabel('km')
 #ax.set_ylabel('km')
 #ax.set_zlabel('km')
@@ -108,16 +115,20 @@ ax.set_zlim3d(0, 1500000)
 plt.axis('off')
 
 #Bright features stand out
+#how much they could possibly stand out by
 scale_factor = 0.25 * r_km
-minimum_intensity_threshold = 0.25 #intensity values must exceed this in order to 
-	#become protrusions. This prevents inflation to maintain spherical shape
+minimum_intensity_threshold = 0. #intensity values must exceed this in order to 
+	#become protrusions. This prevents inflation to maintain spherical shape and is not
+	#necessary for logarithmic and exponential scales
 buffer_zone = 0. * km_per_pixel #region around outside that has no protrusions to
 	#prevent warping and inflating around edges
 
+#logarithmic scale function, can be used below when creating pts.
 def log_scale(intensity):
 	return ((scale_factor * ((10.**((intensity - minimum_intensity_threshold) 
 	/ (1. - minimum_intensity_threshold))) - 1)) * (1./9.))
 
+#scale function can be exponential, used below to make pts.
 def scale(intensity, exp=1):
 	return (scale_factor * ((intensity - minimum_intensity_threshold) 
 	/ (1. - minimum_intensity_threshold))**exp)
@@ -131,11 +142,11 @@ add = []
 
 for xpoint in range(xDimen):
 	row = []
-	for ypoint in range(xDimen):
+	for ypoint in range(yDimen):
 		 if(image[xpoint][ypoint] < minimum_intensity_threshold):
 		 	row.append(0)
 		 else:
-			row.append(scale(image[xpoint][ypoint], exp=1.5))
+			row.append(scale(image[xpoint][ypoint], exp=1.7))
 	add.append(row)
 
 #This for loop goes through the initial x, y, and z values and adds to their position 
@@ -174,16 +185,18 @@ z = np.asarray(z_list_final)
 #antialiased determines whether or not the figure is drawn with antialiasing
 #vmin and vmax determine the range of the colormap: they're not necessary
 
-ax.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.jet,
+ax.plot_surface(x, y, z, rstride=1, cstride=1, antialiased=True, cmap=plt.cm.jet,
 facecolors=plt.cm.jet(image))#, vmin=0., vmax=3000.)
 #plt.cm.jet uses a different color map with a full spectrum... gist_heat... hot
 
-ax.view_init(elev=45, azim=0)
+ax.view_init(elev=45, azim=45)
 
+#Movie making
 #azim = np.linspace(0,360,300) # A list of angles between 0 and 360 rotation angle
 #elev = np.linspace(90,0,300) # A list of angles between 90 and 0 elevation angle
 # create a movie with 10 frames per seconds and 'quality' 2000
-file = 'movie.gif' #name of movie
+#file = 'movie.gif' #name of movie
+#calling function to make a movie with set points
 #makeMovie.rotanimate(ax, file, azim, elev, fps=30)
 
 plt.show()
