@@ -178,7 +178,7 @@ ax.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.j
 facecolors=plt.cm.jet(image))#, vmin=0., vmax=3000.)
 #plt.cm.jet uses a different color map with a full spectrum... gist_heat... hot
 
-ax.view_init(elev=90, azim=0)
+ax.view_init(elev=45, azim=0)
 
 #azim = np.linspace(0,360,300) # A list of angles between 0 and 360 rotation angle
 #elev = np.linspace(90,0,300) # A list of angles between 90 and 0 elevation angle
