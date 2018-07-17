@@ -153,8 +153,6 @@ z = np.asarray(z_list_final)
 
 #rstride and cstride determine how frequently values are taken from the arrays and 
 	#plotted, lower stride yields higher resolution
-#norm is the instance of the Normalize class that is used to map the inputted values to
-	#actual colors, this input is not needed
 #cmap is a color map for the surface patches. This line isn't necessary but makes the 
 	#colors match better
 #facecolors sets the image to be drawn and plt.cm.jet normalizes the colors.
