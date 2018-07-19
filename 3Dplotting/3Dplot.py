@@ -9,12 +9,14 @@ import urllib
 import imageFinder
 from matplotlib import animation
 import makeMovie
+from stl_tools import numpy2stl
+from stl import mesh
 
 date = '2007/02/02'
-
+'''
 #calling imageFinder program to find the image of the set date
 data, header = imageFinder.file_finder(date)
-
+'''
 #this uses known values to approximate the number of km per pixel
 dist_earth_to_sun = 148000000 #in km, changes depending on time
 degree_per_arcsec = 1./3600. 
@@ -22,14 +24,14 @@ rad_per_degree = np.pi/180
 km_per_pixel = (np.sin((degree_per_arcsec * rad_per_degree / 2))
  * dist_earth_to_sun * 2)
 square_km_per_pixel = km_per_pixel**2
-
+'''
 #info from the header
 XCEN = header[0].__getitem__('XCEN')
 YCEN = header[0].__getitem__('YCEN')
 DATEOBS = header[0].__getitem__('CTIME')
 NAXIS1 = header[0].__getitem__('NAXIS1')
 NAXIS2 = header[0].__getitem__('NAXIS2')
-
+'''
 #image = data[0][0] #gets the data from the jp2 file, however this format does not work 
 	#with the the plot surface, instead it is converted to a png in an oustide program
 
@@ -116,7 +118,8 @@ plt.axis('off')
 
 #Bright features stand out
 #how much they could possibly stand out by
-scale_factor = 0.25 * r_km
+scale_factor_percent = 0.25
+scale_factor = scale_factor_percent * r_km
 minimum_intensity_threshold = 0. #intensity values must exceed this in order to 
 	#become protrusions. This prevents inflation to maintain spherical shape and is not
 	#necessary for logarithmic and exponential scales
@@ -176,28 +179,86 @@ x = np.asarray(x_list_final)
 y = np.asarray(y_list_final)
 z = np.asarray(z_list_final)
 
-#rstride and cstride determine how frequently values are taken from the arrays and 
-	#plotted, lower stride yields higher resolution
-#cmap is a color map for the surface patches. This line isn't necessary but makes the 
-	#colors match better
-#facecolors sets the image to be drawn and plt.cm.jet normalizes the colors.
-	#They then match up with the cmap inputted which is the same
-#antialiased determines whether or not the figure is drawn with antialiasing
-#vmin and vmax determine the range of the colormap: they're not necessary
+def stl_file_maker(data):
+	'''This uses the stl_tools numpy2 stl in order to convert an array into a 3D printable
+	model. This cannot take xyz dimensions and cannot make the full 3D model. It makes the
+	2D image 3D printable.'''
+	
+	numpy2stl(data, 'test.stl', scale=1/km_per_pixel, solid=True, max_width=100, 
+	max_depth=100, max_height=(r*100/xDimen)*(1 + scale_factor_percent))
+	return()
+	
 
-ax.plot_surface(x, y, z, rstride=1, cstride=1, antialiased=True, cmap=plt.cm.jet,
-facecolors=plt.cm.jet(image))#, vmin=0., vmax=3000.)
-#plt.cm.jet uses a different color map with a full spectrum... gist_heat... hot
+def stl_mesh_maker(x, y, z):
+	'''This uses the stl mesh.Mesh in order to turn the x, y, and z arrays into a single 
+	array with 3 pts each. It then turns it into vectors by taking 2 adjacent points. Used
+	to make full 3D models.
+	'''
+	data = []
 
-ax.view_init(elev=45, azim=45)
+	for i in range(len(x)):
+		temp = []
+		for j in range(len(x)):
+			temp.append([x[i][j], y[i][j], z[i][j]])
+		data.append(temp)
 
-#Movie making
-#azim = np.linspace(0,360,300) # A list of angles between 0 and 360 rotation angle
-#elev = np.linspace(90,0,300) # A list of angles between 90 and 0 elevation angle
-# create a movie with 10 frames per seconds and 'quality' 2000
-#file = 'movie.gif' #name of movie
-#calling function to make a movie with set points
-#makeMovie.rotanimate(ax, file, azim, elev, fps=30)
+	data = np.asarray(data)
 
-plt.show()
-#plt.savefig('3d.png')
+	vector_data = np.zeros(data.shape[0]*data.shape[1], dtype=mesh.Mesh.dtype)
+
+	for i in range(data.shape[0]):
+		for j in range(data.shape[1]):
+			if (i < data.shape[0] - 1) & (j < data.shape[1] - 1):
+				vector_data['vectors'][j+i*data.shape[0]] = np.array([data[i][j],
+				data[i][j+1], data[i+1][j]])
+			else:
+				vector_data['vectors'][j+i*data.shape[0]] = np.array([data[i][j], 
+				data[i][j-1], data[i-1][j]])
+
+	data = []
+
+	for i in range(len(x)):
+		temp = []
+		for j in range(len(x)):
+			temp.append([x[i][j], y[i][j], z[i][j]])
+		data.append(temp)
+
+	new_mesh = mesh.Mesh(vector_data)
+	new_mesh.save('test1.stl')
+	return new_mesh
+
+def plot():
+	'''Plots the axis created above and allows for specification of initial angle, points,
+	color map etc.
+	'''
+	#rstride and cstride determine how frequently values are taken from the arrays and 
+		#plotted, lower stride yields higher resolution
+	#cmap is a color map for the surface patches. This line isn't necessary but makes the 
+		#colors match better
+	#facecolors sets the image to be drawn and plt.cm.jet normalizes the colors.
+		#They then match up with the cmap inputted which is the same
+	#antialiased determines whether or not the figure is drawn with antialiasing
+	#vmin and vmax determine the range of the colormap: they're not necessary
+
+	ax.plot_surface(x, y, z, rstride=1, cstride=1, antialiased=True, cmap=plt.cm.jet,
+	facecolors=plt.cm.jet(image))#, vmin=0., vmax=3000.)
+	#plt.cm.jet uses a different color map with a full spectrum... gist_heat... hot
+
+	ax.view_init(elev=45, azim=45)
+	
+	plt.show()
+	#plt.savefig('3d.png')
+
+def make_movie(ax):
+	'''Calls the make movie rotanimate function and makes a move with the specified 
+	azim pts, elev pts, filename, and fps
+	'''
+	ax.plot_surface(x, y, z, rstride=1, cstride=1, antialiased=True, cmap=plt.cm.jet,
+	facecolors=plt.cm.jet(image))
+	
+	azim = np.linspace(0,360,300) # A list of angles between 0 and 360 rotation angle
+	elev = np.linspace(90,0,300) # A list of angles between 90 and 0 elevation angle
+	# create a movie with 10 frames per seconds and 'quality' 2000
+	file = 'movie.gif' #name of movie
+	#calling function to make a movie with set points
+	makeMovie.rotanimate(ax, file, azim, elev, fps=30)
