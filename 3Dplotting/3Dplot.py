@@ -30,17 +30,19 @@ def stl_file_maker(data):
 	numpy2stl(data, 'test.stl', scale=1/km_per_pixel, solid=True, max_width=100, 
 	max_depth=100, max_height=(r*100/xDimen)*(1 + scale_factor_percent))	
 
-def stl_mesh_maker(x, y, z):
+def stl_mesh_maker(x, y, z, interval=2):
 	'''This uses the stl mesh.Mesh in order to turn the x, y, and z arrays into a single 
 	array with 3 pts each. It then turns it into vectors by taking 2 adjacent points. Used
 	to make full 3D models.
 	'''
 	data = []
 
-	for i in range(len(x)):
+	k = interval
+
+	for i in range(len(x) / k):
 		temp = []
-		for j in range(len(x)):
-			temp.append([x[i][j], y[i][j], z[i][j]])
+		for j in range(len(x) / k):
+			temp.append([x[i*k][j*k], y[i*k][j*k], z[i*k][j*k]])
 		data.append(temp)
 
 	data = np.asarray(data)
@@ -173,7 +175,7 @@ def init3D_shape():
 	z_init = np.asarray(zlist)
 	return x_init, y_init, z_init
 	
-def add_function(exp=1.):
+def add_function(exp=1., buffer=False):
 	'''This for loop goes through all the points and determines whether or not it is on the
 	hemisphere and whether or not the intensity surpasses the threshold. If not, then no 
 	multiplier is added. If yes then a multiplier is created based on the intensity of 
@@ -185,7 +187,10 @@ def add_function(exp=1.):
 	for xpoint in range(xDimen):
 		row = []
 		for ypoint in range(yDimen):
-			 if(image[xpoint][ypoint] < minimum_intensity_threshold):
+			 if ((image[xpoint][ypoint] < minimum_intensity_threshold) 
+			 or ((buffer==True) & (np.sqrt((xpoint-centerX)**2 + (ypoint-centerY)**2) < r) 
+			 & ((np.sqrt((xpoint-centerX)**2 + (ypoint-centerY)**2) 
+			 > (r - buffer_zone))))):
 				row.append(0)
 			 else:
 				row.append(scale(image[xpoint][ypoint], exp=exp))
@@ -274,18 +279,16 @@ x_init, y_init, z_init = init3D_shape()
 #Bright features stand out
 
 #how much they could possibly stand out by
-scale_factor_percent = 0.25
+scale_factor_percent = 0.2
 scale_factor = scale_factor_percent * r_km
-minimum_intensity_threshold = 0. #intensity values must exceed this in order to 
+minimum_intensity_threshold = 0.3 #intensity values must exceed this in order to 
 #become protrusions. This prevents inflation to maintain spherical shape and is not
 #necessary for logarithmic and exponential scales
-buffer_zone = 0. * km_per_pixel #region around outside that has no protrusions to
+buffer_zone = 0. #region around outside that has no protrusions to
 #prevent warping and inflating around edges
 
-add = add_function(exp=1.8)
+add = add_function(exp = 1.7, buffer=False)
 
 x, y, z = final_height_addition()
 
-make_movie(x, y, z)
-
-#stl_mesh_maker(x, y, z)
+stl_mesh_maker(x, y, z)
