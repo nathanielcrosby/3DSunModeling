@@ -228,10 +228,14 @@ def final_height_addition():
 		yrow = []
 		zrow = []
 		for ypoint in range(yDimen):
-			xrow.append(x_init[xpoint][ypoint] + ((x_init[xpoint][ypoint] - (centerX_km))
-			 * (add[xpoint][ypoint] / xDimen_km)))
-			yrow.append(y_init[xpoint][ypoint] + ((y_init[xpoint][ypoint] - (centerY_km))
-			 * (add[xpoint][ypoint] / yDimen_km)))
+			if ((np.sqrt((xpoint-centerX)**2 + (ypoint-centerY)**2)) < r):
+				xrow.append(x_init[xpoint][ypoint] + ((x_init[xpoint][ypoint] - (centerX_km))
+				 * (add[xpoint][ypoint] / r_km)))
+				yrow.append(y_init[xpoint][ypoint] + ((y_init[xpoint][ypoint] - (centerY_km))
+				 * (add[xpoint][ypoint] / r_km)))
+			else:
+				xrow.append(x_init[xpoint][ypoint])
+				yrow.append(y_init[xpoint][ypoint])
 			zrow.append(z_init[xpoint][ypoint] + add[xpoint][ypoint])
 		x_list_final.append(xrow)
 		y_list_final.append(yrow)
@@ -243,6 +247,7 @@ def final_height_addition():
 	z = np.asarray(z_list_final)
 	
 	return x, y, z
+
 
 km_per_pixel = km_per_pixel()
 
@@ -297,14 +302,16 @@ x_init, y_init, z_init = init3D_shape()
 #how much they could possibly stand out by
 scale_factor_percent = 0.2
 scale_factor = scale_factor_percent * r_km
-minimum_intensity_threshold = 0.3 #intensity values must exceed this in order to 
+minimum_intensity_threshold = 0.0 #intensity values must exceed this in order to 
 #become protrusions. This prevents inflation to maintain spherical shape and is not
 #necessary for logarithmic and exponential scales
 buffer_zone = 0. #region around outside that has no protrusions to
 #prevent warping and inflating around edges
 
-add = add_function(exp = 1.7, buffer=False)
+add = add_function(exp=1.7, buffer=False)
 
 x, y, z = final_height_addition()
 
-stl_file_maker(image)
+ThreeDPlot(fig, x, y, z)
+
+#stl_file_maker(image)
