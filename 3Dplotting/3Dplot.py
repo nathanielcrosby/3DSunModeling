@@ -33,7 +33,7 @@ def stl_file_maker(data):
 def stl_mesh_maker(x, y, z, interval=2):
 	'''This uses the stl mesh.Mesh in order to turn the x, y, and z arrays into a single 
 	array with 3 pts each. It then turns it into vectors by taking 2 adjacent points. Used
-	to make full 3D models.
+	to make full 3D models. Interal determines the rate at which points in the array are used
 	'''
 	data = []
 
@@ -47,7 +47,7 @@ def stl_mesh_maker(x, y, z, interval=2):
 
 	data = np.asarray(data)
 
-	vector_data = np.zeros(data.shape[0]*data.shape[1], dtype=mesh.Mesh.dtype)
+	vector_data = np.zeros(data.shape[0]*data.shape[1] + 4, dtype=mesh.Mesh.dtype)
 
 	for i in range(data.shape[0]):
 		for j in range(data.shape[1]):
@@ -58,6 +58,16 @@ def stl_mesh_maker(x, y, z, interval=2):
 				vector_data['vectors'][j+i*data.shape[0]] = np.array([data[i][j], 
 				data[i][j-1], data[i-1][j]])
 
+	vector_data['vectors'][data.shape[0]*data.shape[1]] = np.array([data[0][0], 
+	data[0][data.shape[1]-1], data[data.shape[0]-1][data.shape[1]-1]])
+	vector_data['vectors'][data.shape[0]*data.shape[1] + 1] = np.array([data[0][0], 
+	data[data.shape[0]-1][0], data[data.shape[0]-1][data.shape[1]-1]])
+	vector_data['vectors'][data.shape[0]*data.shape[1] + 2] = np.array([data[0][0], 
+	data[data.shape[0]-1][0], data[0][data.shape[1]-1]])
+	vector_data['vectors'][data.shape[0]*data.shape[1] + 3] = np.array(
+	[data[data.shape[0]-1][data.shape[1]-1], data[0][data.shape[1]-1], 
+	data[data.shape[0]-1][0]])
+	
 	new_mesh = mesh.Mesh(vector_data)
 	new_mesh.save('test1.stl')
 	return new_mesh
