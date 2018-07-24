@@ -11,6 +11,8 @@ from matplotlib import animation
 import makeMovie
 from stl_tools import numpy2stl
 from stl import mesh
+from scipy.misc import imresize
+from scipy.ndimage import gaussian_filter
 
 def km_per_pixel():
 	#this uses known values to approximate the number of km per pixel
@@ -23,12 +25,16 @@ def km_per_pixel():
 	return km_per_pixel
 
 def stl_file_maker(data):
-	'''This uses the stl_tools numpy2 stl in order to convert an array into a 3D printable
+	'''This uses the stl_tools numpy2stl in order to convert an array into a 3D printable
 	model. This cannot take xyz dimensions and cannot make the full 3D model. It makes the
 	2D image 3D printable.'''
 	
-	numpy2stl(data, 'test.stl', scale=1/km_per_pixel, solid=True, max_width=100, 
-	max_depth=100, max_height=(r*100/xDimen)*(1 + scale_factor_percent))	
+	data = 4*data
+	data = imresize(data, (512, 512))
+	data = gaussian_filter(data, 1)
+	
+	numpy2stl(data, 'test.stl', scale=scale_factor_percent*1.3, solid=True, max_width=100, 
+	max_depth=100, max_height=(r*100/xDimen)*(scale_factor_percent*1.3))	
 
 def stl_mesh_maker(x, y, z, interval=2):
 	'''This uses the stl mesh.Mesh in order to turn the x, y, and z arrays into a single 
@@ -301,4 +307,4 @@ add = add_function(exp = 1.7, buffer=False)
 
 x, y, z = final_height_addition()
 
-stl_mesh_maker(x, y, z)
+stl_file_maker(image)
