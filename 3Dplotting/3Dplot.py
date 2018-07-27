@@ -41,6 +41,13 @@ def stl_mesh_maker(x, y, z, interval=2):
 	array with 3 pts each. It then turns it into vectors by taking 2 adjacent points. Used
 	to make full 3D models. Interal determines the rate at which points in the array are used
 	'''
+	
+	base = 5 #mm
+	
+	for value1 in range(z.shape[0]):
+		for value2 in range(z.shape[1]):
+			z[value1][value2] += base 
+	
 	data = []
 
 	k = interval
@@ -53,26 +60,77 @@ def stl_mesh_maker(x, y, z, interval=2):
 
 	data = np.asarray(data)
 
-	vector_data = np.zeros(data.shape[0]*data.shape[1] + 4, dtype=mesh.Mesh.dtype)
-
+	vector_data = np.zeros(2*data.shape[0]*data.shape[1] + 10, dtype=mesh.Mesh.dtype)
+	
+	count = 0
+	
 	for i in range(data.shape[0]):
 		for j in range(data.shape[1]):
 			if (i < data.shape[0] - 1) & (j < data.shape[1] - 1):
-				vector_data['vectors'][j+i*data.shape[0]] = np.array([data[i][j],
+				vector_data['vectors'][count] = np.array([data[i][j],
 				data[i][j+1], data[i+1][j]])
+				count+=1
+				if (i > 0) & (j > 0):
+					vector_data['vectors'][count] = np.array([data[i][j],
+					data[i][j-1], data[i-1][j]])
+					count+=1
+			
 			else:
-				vector_data['vectors'][j+i*data.shape[0]] = np.array([data[i][j], 
+				vector_data['vectors'][count] = np.array([data[i][j], 
 				data[i][j-1], data[i-1][j]])
-
-	vector_data['vectors'][data.shape[0]*data.shape[1]] = np.array([data[0][0], 
-	data[0][data.shape[1]-1], data[data.shape[0]-1][data.shape[1]-1]])
-	vector_data['vectors'][data.shape[0]*data.shape[1] + 1] = np.array([data[0][0], 
-	data[data.shape[0]-1][0], data[data.shape[0]-1][data.shape[1]-1]])
-	vector_data['vectors'][data.shape[0]*data.shape[1] + 2] = np.array([data[0][0], 
-	data[data.shape[0]-1][0], data[0][data.shape[1]-1]])
-	vector_data['vectors'][data.shape[0]*data.shape[1] + 3] = np.array(
-	[data[data.shape[0]-1][data.shape[1]-1], data[0][data.shape[1]-1], 
-	data[data.shape[0]-1][0]])
+				count+=1
+			
+	for value in range(10):
+		print(value)
+		print(vector_data['vectors'][data.shape[0]*data.shape[1] + value])
+		
+	print(vector_data['vectors'].shape)
+	print(data.shape[0]*data.shape[1])
+	print(count)
+		
+	vector_data['vectors'][data.shape[0]*data.shape[1]*2] = np.array([[0,0,0], 
+	[data[data.shape[0]-1][data.shape[1]-1][0],0,0],
+	[data[data.shape[0]-1][data.shape[1]-1][0], data[data.shape[0]-1][data.shape[1]-1][1], 0]])
+	
+	vector_data['vectors'][data.shape[0]*data.shape[1]*2 + 1] = np.array([[0,0,0], 
+	[0,data[data.shape[0]-1][data.shape[1]-1][0],0],
+	[data[data.shape[0]-1][data.shape[1]-1][0] ,data[data.shape[0]-1][data.shape[1]-1][1] , 0]])
+	
+	vector_data['vectors'][data.shape[0]*data.shape[1]*2 + 2] = np.array([[0,0,0], 
+	[data[data.shape[0]-1][data.shape[1]-1][0],0,0],
+	[data[data.shape[0]-1][data.shape[1]-1][0], 0, data[data.shape[0]-1][data.shape[1]-1][2]]])
+	
+	vector_data['vectors'][data.shape[0]*data.shape[1]*2 + 3] = np.array([[0,0,0], 
+	[0,0,data[data.shape[0]-1][data.shape[1]-1][2]],
+	[data[data.shape[0]-1][data.shape[1]-1][0], 0, data[data.shape[0]-1][data.shape[1]-1][2]]])
+	
+	vector_data['vectors'][data.shape[0]*data.shape[1]*2 + 4] = np.array([[0,0,0], 
+	[0, data[data.shape[0]-1][data.shape[1]-1][1], 0],
+	[0, data[data.shape[0]-1][data.shape[1]-1][1], data[data.shape[0]-1][data.shape[1]-1][2]]])
+	
+	vector_data['vectors'][data.shape[0]*data.shape[1]*2 + 5] = np.array([[0,0,0], 
+	[0, 0, data[data.shape[0]-1][data.shape[1]-1][2]],
+	[0, data[data.shape[0]-1][data.shape[1]-1][1], data[data.shape[0]-1][data.shape[1]-1][2]]])
+	
+	vector_data['vectors'][data.shape[0]*data.shape[1]*2 + 6] = np.array([[0,data[data.shape[0]-1][data.shape[1]-1][1],0], 
+	[data[data.shape[0]-1][data.shape[1]-1][0],data[data.shape[0]-1][data.shape[1]-1][1], 0],
+	[data[data.shape[0]-1][data.shape[1]-1][0], data[data.shape[0]-1][data.shape[1]-1][1], 
+	data[data.shape[0]-1][data.shape[1]-1][2]]])
+	
+	vector_data['vectors'][data.shape[0]*data.shape[1]*2 + 7] = np.array([[0,data[data.shape[0]-1][data.shape[1]-1][1],0], 
+	[0, data[data.shape[0]-1][data.shape[1]-1][1], data[data.shape[0]-1][data.shape[1]-1][2]],
+	[data[data.shape[0]-1][data.shape[1]-1][0], data[data.shape[0]-1][data.shape[1]-1][1], 
+	data[data.shape[0]-1][data.shape[1]-1][2]]])
+	
+	vector_data['vectors'][data.shape[0]*data.shape[1]*2 + 8] = np.array([[data[data.shape[0]-1][data.shape[1]-1][0],0,0], 
+	[data[data.shape[0]-1][data.shape[1]-1][0], data[data.shape[0]-1][data.shape[1]-1][1], 0],
+	[data[data.shape[0]-1][data.shape[1]-1][0], data[data.shape[0]-1][data.shape[1]-1][1], 
+	data[data.shape[0]-1][data.shape[1]-1][2]]])
+	
+	vector_data['vectors'][data.shape[0]*data.shape[1]*2 + 9] = np.array([[data[data.shape[0]-1][data.shape[1]-1][0],0,0], 
+	[data[data.shape[0]-1][data.shape[1]-1][0], 0, data[data.shape[0]-1][data.shape[1]-1][2]],
+	[data[data.shape[0]-1][data.shape[1]-1][0], data[data.shape[0]-1][data.shape[1]-1][1], 
+	data[data.shape[0]-1][data.shape[1]-1][2]]])
 	
 	new_mesh = mesh.Mesh(vector_data)
 	new_mesh.save('test1.stl')
@@ -169,7 +227,7 @@ def init3D_shape():
 	#x and y are arrays shaped the size of the pixel dimensions respectively
 		#they go from 0 to the dimension in km at intervals of the dimension in km/dimen in px
 		#This way each point lines up exactly to a pixel
-	x_init, y_init = np.mgrid[0:xDimen_km:(xDimen_km/xDimen), 0:yDimen_km:(yDimen_km/yDimen)]
+	x_init, y_init = np.mgrid[0:xDimen_len:(xDimen_len/xDimen), 0:yDimen_len:(yDimen_len/yDimen)]
 
 	#This for loop uses the formula of a sphere (x**2 + y**2 + z**2 = r**2) in order to define
 		#z points that are 0 outside the radius and on the hemisphere inside the radius
@@ -179,19 +237,19 @@ def init3D_shape():
 	for xpoint in range(xDimen):
 		xrow = []
 		for ypoint in range(yDimen):
-			if(np.sqrt((xpoint * km_per_pixel - (centerX_km))**2. + (ypoint * km_per_pixel
-			 - (centerY_km))**2.) >= r_km):
+			if(np.sqrt((xpoint * len_per_pixel - (centerX_len))**2. + (ypoint * len_per_pixel
+			 - (centerY_len))**2.) >= r_len):
 				xrow.append(0)
 			else:
-				xrow.append(np.sqrt(r_km**2. - (xpoint * km_per_pixel - (centerX_km))**2.
-				 - (ypoint * km_per_pixel - (centerY_km))**2.))
+				xrow.append(np.sqrt(r_len**2. - (xpoint * len_per_pixel - (centerX_len))**2.
+				 - (ypoint * len_per_pixel - (centerY_len))**2.))
 		zlist.append(xrow)
 
 	#plot surface requires an array
 	z_init = np.asarray(zlist)
 	return x_init, y_init, z_init
 	
-def add_function(exp=1., buffer=False):
+def add_function(exp=1., buffer=False, len_per_pixel=km_per_pixel):
 	'''This for loop goes through all the points and determines whether or not it is on the
 	hemisphere and whether or not the intensity surpasses the threshold. If not, then no 
 	multiplier is added. If yes then a multiplier is created based on the intensity of 
@@ -229,10 +287,10 @@ def final_height_addition():
 		zrow = []
 		for ypoint in range(yDimen):
 			if ((np.sqrt((xpoint-centerX)**2 + (ypoint-centerY)**2)) < r):
-				xrow.append(x_init[xpoint][ypoint] + ((x_init[xpoint][ypoint] - (centerX_km))
-				 * (add[xpoint][ypoint] / r_km)))
-				yrow.append(y_init[xpoint][ypoint] + ((y_init[xpoint][ypoint] - (centerY_km))
-				 * (add[xpoint][ypoint] / r_km)))
+				xrow.append(x_init[xpoint][ypoint] + ((x_init[xpoint][ypoint] - (centerX_len))
+				 * (add[xpoint][ypoint] / r_len)))
+				yrow.append(y_init[xpoint][ypoint] + ((y_init[xpoint][ypoint] - (centerY_len))
+				 * (add[xpoint][ypoint] / r_len)))
 			else:
 				xrow.append(x_init[xpoint][ypoint])
 				yrow.append(y_init[xpoint][ypoint])
@@ -249,7 +307,8 @@ def final_height_addition():
 	return x, y, z
 
 
-km_per_pixel = km_per_pixel()
+#km_per_pixel = km_per_pixel()
+len_per_pixel = 0.05
 
 date = '2007/02/02'
 '''
@@ -278,22 +337,22 @@ offsetX = 30. #px
 offsetY = -30. #px
 
 #pixel dimensions in kilometers
-xDimen_km = xDimen * km_per_pixel
-yDimen_km = yDimen * km_per_pixel
+xDimen_len = xDimen * len_per_pixel
+yDimen_len = yDimen * len_per_pixel
 
 #new calculated center of sun
 centerX = xDimen/2. - offsetX
 centerY = yDimen/2. - offsetY
 
  #in km
-centerX_km = centerX * km_per_pixel
-centerY_km = centerY * km_per_pixel
+centerX_len = centerX * len_per_pixel
+centerY_len = centerY * len_per_pixel
 
 #creates figure
 fig = plt.figure(figsize=(10.,10.))
 
 r = 925. #determines the size of the sphere, should be radius of the sun in image
-r_km = r * km_per_pixel #in km
+r_len = r * len_per_pixel #in km
 
 x_init, y_init, z_init = init3D_shape()
 
@@ -301,17 +360,22 @@ x_init, y_init, z_init = init3D_shape()
 
 #how much they could possibly stand out by
 scale_factor_percent = 0.2
-scale_factor = scale_factor_percent * r_km
-minimum_intensity_threshold = 0.0 #intensity values must exceed this in order to 
+scale_factor = scale_factor_percent * r_len
+
+minimum_intensity_threshold = 0.3 #intensity values must exceed this in order to 
 #become protrusions. This prevents inflation to maintain spherical shape and is not
 #necessary for logarithmic and exponential scales
-buffer_zone = 0. #region around outside that has no protrusions to
+buffer_zone = 25. #region around outside that has no protrusions to
 #prevent warping and inflating around edges
 
 add = add_function(exp=1.7, buffer=False)
 
 x, y, z = final_height_addition()
 
-ThreeDPlot(fig, x, y, z)
+stl_mesh_maker(x, y, z, interval=8)
+
+#ThreeDPlot(fig, x, y, z)
 
 #stl_file_maker(image)
+
+plt.close('all')
