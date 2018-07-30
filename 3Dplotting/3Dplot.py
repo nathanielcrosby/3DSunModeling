@@ -42,7 +42,9 @@ def stl_mesh_maker(x, y, z, interval=2):
 	to make full 3D models. Interal determines the rate at which points in the array are used
 	'''
 	
-	base = 5 #mm
+	
+	#adding a base to the stl file so that every part of the file has a width
+	base = 4 #mm
 	
 	for value1 in range(z.shape[0]):
 		for value2 in range(z.shape[1]):
@@ -50,6 +52,7 @@ def stl_mesh_maker(x, y, z, interval=2):
 	
 	data = []
 
+	#interval at which the data is taken from the arrays
 	k = interval
 
 	for i in range(len(x) / k):
@@ -60,6 +63,7 @@ def stl_mesh_maker(x, y, z, interval=2):
 
 	data = np.asarray(data)
 
+	#contains all the vectors created from data points
 	vector_data = np.zeros(2*data.shape[0]*data.shape[1] + 10, dtype=mesh.Mesh.dtype)
 	
 	count = 0
@@ -79,14 +83,6 @@ def stl_mesh_maker(x, y, z, interval=2):
 				vector_data['vectors'][count] = np.array([data[i][j], 
 				data[i][j-1], data[i-1][j]])
 				count+=1
-			
-	for value in range(10):
-		print(value)
-		print(vector_data['vectors'][data.shape[0]*data.shape[1] + value])
-		
-	print(vector_data['vectors'].shape)
-	print(data.shape[0]*data.shape[1])
-	print(count)
 		
 	vector_data['vectors'][data.shape[0]*data.shape[1]*2] = np.array([[0,0,0], 
 	[data[data.shape[0]-1][data.shape[1]-1][0],0,0],
@@ -359,7 +355,7 @@ x_init, y_init, z_init = init3D_shape()
 #Bright features stand out
 
 #how much they could possibly stand out by
-scale_factor_percent = 0.2
+scale_factor_percent = 0.3
 scale_factor = scale_factor_percent * r_len
 
 minimum_intensity_threshold = 0.3 #intensity values must exceed this in order to 
@@ -372,7 +368,7 @@ add = add_function(exp=1.7, buffer=False)
 
 x, y, z = final_height_addition()
 
-stl_mesh_maker(x, y, z, interval=8)
+stl_mesh_maker(x, y, z, interval=4)
 
 #ThreeDPlot(fig, x, y, z)
 
