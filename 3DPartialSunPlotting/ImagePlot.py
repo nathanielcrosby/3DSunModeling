@@ -17,6 +17,7 @@ def km_per_pixel(arcs_per_pix=1.):
 	return km_per_pixel
 	
 def stl_file_maker(data, interval=1.5, threshold=0.13):
+
 	'''This uses the stl_tools numpy2stl in order to convert an array into a 3D printable
 	model. This cannot take xyz dimensions and cannot make the full 3D model. It makes the
 	2D image 3D printable.'''
@@ -27,6 +28,7 @@ def stl_file_maker(data, interval=1.5, threshold=0.13):
 		for ypoint in range(data.shape[1]):
 			if (np.sqrt((xpoint - earth_scale_x)**2 + (ypoint - earth_scale_y)**2) <= earth_radius_px):
 				data[xpoint][ypoint] = 0.05
+
 			elif (data[xpoint][ypoint] <= threshold):
 				data[xpoint][ypoint] = 0
 			else:
@@ -39,6 +41,7 @@ def stl_file_maker(data, interval=1.5, threshold=0.13):
 	#dimensions in mm, if scale = 100, then the dimensions will be exact
 	numpy2stl(data, 'test.stl', scale=100, solid=True, max_width=228.6, 
 	max_depth=228.6, max_height=60, force_python=True)	
+
 	
 def TwoDPlot(fig):
 	#2D drawing of the image
@@ -63,6 +66,7 @@ image = read_png(file+'.png')
 km_per_pixel = km_per_pixel(arcs_per_pix=header[0].__getitem__('IMSCL_MP'))
 
 #center points for the earth to scale figure
+
 earth_scale_y = 35
 earth_scale_x = image.shape[1] - 35 #px
 
