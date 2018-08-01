@@ -16,7 +16,7 @@ def km_per_pixel(arcs_per_pix=1.):
 	square_km_per_pixel = km_per_pixel**2.
 	return km_per_pixel
 	
-def stl_file_maker(data, interval=1.5, threshold=0.13):
+def stl_file_maker(data, interval=1.5, threshold=0.35):
 
 	'''This uses the stl_tools numpy2stl in order to convert an array into a 3D printable
 	model. This cannot take xyz dimensions and cannot make the full 3D model. It makes the
@@ -55,7 +55,7 @@ earth_radius = 6371 #km
 
 scale_factor_percent = 0.3
 
-file = '2015_02_04__19_59_19_12__SDO_AIA_AIA_304'
+file = '2012_04_16__17_38_56_12__SDO_AIA_AIA_304'
 
 #Does not work with cropped image 
 #data = io.read_file('2014_05_27__14_38_31_12__SDO_AIA_AIA_304.jp2')	
