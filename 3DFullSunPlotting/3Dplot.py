@@ -29,7 +29,7 @@ def stl_file_maker(data, scale=100, width=100, depth=100, height=20):
 	model. This cannot take xyz dimensions and cannot make the full 3D model. It makes the
 	2D image 3D printable.'''
 	
-	print('making mesh')
+	print('making mesh...')
 	
 	data = 4*data
 	data = imresize(data, (512, 512))
@@ -137,10 +137,13 @@ def stl_mesh_maker(x, y, z, interval=2):
 	new_mesh.save('test1.stl')
 	return new_mesh
 
-def TwoDPlot(fig):
+def TwoDPlot(figx=10., figy=10.):
 	'''2D drawing of the image'''
 	
-	print('2D plotting')
+	print('2D plotting...')
+	
+	#creates figure
+	fig = plt.figure(figsize=(figx,figy))
 	
 	ax = fig.add_subplot(1, 1, 1)
 	ax.imshow(image)
@@ -148,25 +151,31 @@ def TwoDPlot(fig):
 	#plt.savefig('2d.png')
 	plt.show()
 
-def TwoDin3DPlot(fig):
+def TwoDin3DPlot(image, figx=10., figy=10.):
 	'''Used for the 2d image on plane in a 3d diagram'''
 	
-	print('2D plot in 3D')
+	print('2D plot in 3D...')
+	
+	#creates figure
+	fig = plt.figure(figsize=(figx,figy))
 	
 	x, y = np.mgrid[0:xDimen, 0:yDimen]
 	z = np.zeros((xDimen, yDimen))
 	
 	ax = fig.add_subplot(111, projection='3d')
-	ax.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.jet,
-	facecolors=plt.cm.jet(image))
+	ax.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.hot,
+	facecolors=plt.cm.hot(image))
 	plt.show()
 
-def ThreeDPlot(fig, x, y, z):
+def ThreeDPlot(x, y, z, image, stride=10, figx=10., figy=10., save=False):
 	'''Plots the axis created above and allows for specification of initial angle, points,
 	color map etc.
 	'''
 	
-	print('3D Plotting')
+	print('3D Plotting...')
+
+	#creates figure
+	fig = plt.figure(figsize=(figx,figy))
 	
 	ax = fig.add_subplot(111, projection='3d')
 
@@ -189,13 +198,15 @@ def ThreeDPlot(fig, x, y, z):
 	#antialiased determines whether or not the figure is drawn with antialiasing
 	#vmin and vmax determine the range of the colormap: they're not necessary
 
-	ax.plot_surface(x, y, z, rstride=10, cstride=10, antialiased=True, cmap=plt.cm.jet,
-	facecolors=plt.cm.jet(image))#, vmin=0., vmax=3000.)
+	ax.plot_surface(x, y, z, rstride=stride, cstride=stride, antialiased=True, cmap=plt.cm.hot,
+	facecolors=plt.cm.hot(image))
 	#plt.cm.jet uses a different color map with a full spectrum... gist_heat... hot
 
 	ax.view_init(elev=45, azim=45)
 	
-	#plt.savefig('3d.png')
+	if save:
+		plt.savefig('3d.png')
+		
 	plt.show()
 
 def make_movie(x, y, z):
@@ -203,7 +214,7 @@ def make_movie(x, y, z):
 	azim pts, elev pts, filename, and fps
 	'''
 	
-	print('making movie')
+	print('making movie...')
 	
 	ax = fig.add_subplot(111, projection='3d')
 
@@ -239,7 +250,7 @@ def init3D_shape():
 	'''This creates the initial 3D shape of the hemisphere that will then be modified with
 	intensity values to create the protrusions'''
 	
-	print('creating hemisphere')
+	print('creating hemisphere...')
 
 	#x and y are arrays shaped the size of the pixel dimensions respectively
 		#they go from 0 to the dimension in km at intervals of the dimension in km/dimen in px
@@ -273,7 +284,7 @@ def add_function(exp=1., buffer=False, len_per_pixel=km_per_pixel):
 	that pixel It also used a minimum intensity threshold to maintain spherical shape and
 	Normalizes the values about that threshold'''
 	
-	print('calculating protrusions')
+	print('calculating protrusions...')
 	
 	add = []
 
@@ -291,9 +302,9 @@ def add_function(exp=1., buffer=False, len_per_pixel=km_per_pixel):
 	
 	return add
 	
-def final_height_addition():
+def final_height_addition(x_init, y_init, z_init, add):
 
-	print('adding protrusions')
+	print('adding protrusions...')
 
 	#This for loop goes through the initial x, y, and z values and adds to their position 
 		#based on the multipliers intensity. Only points on the hemisphere are added to
@@ -327,15 +338,33 @@ def final_height_addition():
 	z = np.asarray(z_list_final)
 	
 	return x, y, z
+	
+def retrieve_image(date):
+	'''This uses the imageFinder.file_finder in order to get an image from the date and 
+	then normalize the data'''
+	
+	#calling imageFinder program to find the image of the set date
+	data, header = imageFinder.file_finder(date)
+	
+	image = data[0][0] #gets the data from the jp2 file, however this format does not work 
+	#with the the plot surface, instead it is converted to a png in an oustide program
 
+	image = image.astype(float)
 
-#km_per_pixel = km_per_pixel()
-len_per_pixel = 0.05
+	for x in range(image.shape[0]):
+		for y in range(image.shape[1]):
+			image[x][y] = float(image[x][y]) / 255.
+	
+	return image, header
+
+km_per_pixel = km_per_pixel()
+
+#len_per_pixel = 0.05 #for stl file making
+len_per_pixel = km_per_pixel #for plotting
 
 date = '2007/02/02'
 
-#calling imageFinder program to find the image of the set date
-data, header = imageFinder.file_finder(date)
+image, header = retrieve_image(date)
 
 #info from the header
 XCEN = header[0].__getitem__('XCEN')
@@ -344,18 +373,8 @@ DATEOBS = header[0].__getitem__('CTIME')
 NAXIS1 = header[0].__getitem__('NAXIS1')
 NAXIS2 = header[0].__getitem__('NAXIS2')
 
-image2 = data[0][0] #gets the data from the jp2 file, however this format does not work 
-	#with the the plot surface, instead it is converted to a png in an oustide program
-
-image2 = image2.astype(float)
-
-for x in range(image2.shape[0]):
-	for y in range(image2.shape[1]):
-		image2[x][y] = float(image2[x][y]) / 255.
-
 #image data is already normalized to [0.0, 1.0]
-image = read_png('2007_02_02__12_02_58_608__HINODE_XRT_COMP.png')
-image = image
+#image = read_png('2007_02_02__12_02_58_608__HINODE_XRT_COMP.png')
 
 #pixel dimensions of the image
 xDimen = image.shape[0]
@@ -377,9 +396,6 @@ centerY = yDimen/2. - offsetY
 centerX_len = centerX * len_per_pixel
 centerY_len = centerY * len_per_pixel
 
-#creates figure
-fig = plt.figure(figsize=(10.,10.))
-
 r = 925. #determines the size of the sphere, should be radius of the sun in image
 r_len = r * len_per_pixel #in km
 
@@ -388,24 +404,22 @@ x_init, y_init, z_init = init3D_shape()
 #Bright features stand out
 
 #how much they could possibly stand out by
-scale_factor_percent = 0.3
+scale_factor_percent = 0.25
 scale_factor = scale_factor_percent * r_len
 
-minimum_intensity_threshold = 0.3 #intensity values must exceed this in order to 
+minimum_intensity_threshold = 0.35 #intensity values must exceed this in order to 
 #become protrusions. This prevents inflation to maintain spherical shape and is not
 #necessary for logarithmic and exponential scales
 
-buffer_zone = 25. #region around outside that has no protrusions to
+buffer_zone = 25. #region around outside edge of hemisphere that has no protrusions to
 #prevent warping and inflating around edges
 
-add = add_function(exp=1.7, buffer=False)
+add = add_function(exp=1.3, buffer=True)
 
-x, y, z = final_height_addition()
+x, y, z = final_height_addition(x_init, y_init, z_init, add)
 
-stl_mesh_maker(x, y, z, interval=5)
+#stl_mesh_maker(x, y, z, interval=3)
 
-#ThreeDPlot(fig, x, y, z)
+ThreeDPlot(x, y, z, image)
 
 #stl_file_maker(image)
-
-plt.close('all')
