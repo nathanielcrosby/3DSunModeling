@@ -14,7 +14,15 @@ from scipy.misc import imresize
 from scipy.ndimage import gaussian_filter
 
 def km_per_pixel(arcs_per_pix=1.):
-	'''this uses known values to approximate the number of km per pixel'''
+	'''
+	this uses known values to approximate the number of km per pixel
+		
+	Parameters:
+	
+	arcs_per_pix : float, the number of arcseconds per pixel in the image
+	
+	Returns: km_per_pixel (float)
+	'''
 	
 	dist_earth_to_sun = 151000000. #in km, changes depending on time
 	degree_per_arcsec = 1./3600. 
@@ -24,10 +32,25 @@ def km_per_pixel(arcs_per_pix=1.):
 	square_km_per_pixel = km_per_pixel**2.
 	return km_per_pixel
 
-def stl_file_maker(data, scale=100, width=100, depth=100, height=20):
-	'''This uses the stl_tools numpy2stl in order to convert an array into a 3D printable
+def stl_flat_maker(data, scale=100, width=100, depth=100, height=20):
+	'''
+	This uses the stl_tools numpy2stl in order to convert an array into a 3D printable
 	model. This cannot take xyz dimensions and cannot make the full 3D model. It makes the
-	2D image 3D printable.'''
+	2D image 3D printable.
+	
+	Parameters:
+	
+	data : a numpy array that represents some sort of image to be made into a stl file
+	
+	scale : float, the percent ratio of the actual height vs the original height. A scale
+	of 150 turns a height into 1.5 times more when compared to width than originally.
+	 
+	width : float, max width in mm
+	 
+	depth : float, max depth in mm
+	 
+	height : float, max height in mm
+	'''
 	
 	print('making mesh...')
 	
@@ -46,11 +69,11 @@ def stl_mesh_maker(x, y, z, interval=2, fname='test1.stl'):
 	
 	Parameters:
 	
-	x : x array
+	x : x points array
 	
-	y : y array
+	y : y points array
 	
-	z : z array
+	z : z points array
 	
 	interval: int, the rate at which values are parsed from the x, y, z, arrays in the
 	creation of the stl file, lower -> higher resolution
@@ -152,7 +175,22 @@ def stl_mesh_maker(x, y, z, interval=2, fname='test1.stl'):
 	return new_mesh
 
 def TwoDPlot(image, figx=10., figy=10., save=False, file='2d.png'):
-	'''2D drawing of the image'''
+	'''
+	2D drawing of the image in a 2D field, literally just shows the image with a heat map
+	
+	Parameters:
+	
+	image : numpy array representing the image typically achieved after reading in an
+	image with a variety of libraries
+	
+	figx : float, inches of the x dimension of the plot that appears
+	
+	figy : float, inches of the y dimension of the plot that appears
+	
+	save : boolean, whether or not the save the created plot as a png file
+	
+	file : str, the name of the png file that is potentially saved	
+	'''
 	
 	print('2D plotting...')
 	
@@ -169,7 +207,23 @@ def TwoDPlot(image, figx=10., figy=10., save=False, file='2d.png'):
 	plt.show()
 
 def TwoDin3DPlot(image, figx=10., figy=10., save=False, file='2din3d.png'):
-	'''Used for the 2d image on plane in a 3d diagram'''
+	'''
+	Used for the 2d image on plane in a 3d diagram, shows the 2D image with a heat map
+	at an angle in a 3D plot
+	
+	Parameters:
+	
+	image : numpy array representing the image typically achieved after reading in an
+	image with a variety of libraries
+	
+	figx : float, inches of the x dimension of the plot that appears
+	
+	figy : float, inches of the y dimension of the plot that appears
+	
+	save : boolean, whether or not the save the created plot as a png file
+	
+	file : str, the name of the png file that is potentially saved		
+	'''
 	
 	print('2D plot in 3D...')
 	
@@ -189,8 +243,28 @@ def TwoDin3DPlot(image, figx=10., figy=10., save=False, file='2din3d.png'):
 	plt.show()
 
 def ThreeDPlot(x, y, z, image, stride=10, figx=10., figy=10., save=False, file='3d.png'):
-	'''Plots the axis created above and allows for specification of initial angle, points,
-	color map etc.
+	'''
+	Plots the image in a 3D plot with 3D characteristics. The result with be hemispherical
+	and display prominences that are based on the intensity of the pixels.
+	
+	Parameters:
+	
+	x : x points array
+	
+	y : y points array
+	
+	z : z points array
+	
+	stride : the interval at which points in the array are taken and plotted. A stride of
+	10 means every 10th point from the arrays is plotted.
+	
+	figx : float, inches of the x dimension of the plot that appears
+	
+	figy : float, inches of the y dimension of the plot that appears
+	
+	save : boolean, whether or not the save the created plot as a png file
+	
+	file : str, the name of the png file that is potentially saved	
 	'''
 	
 	print('3D Plotting...')
@@ -233,6 +307,30 @@ def ThreeDPlot(x, y, z, image, stride=10, figx=10., figy=10., save=False, file='
 def make_movie(x, y, z, image, file='movie.gif', fps=30, st_ang=0, en_ang=360, st_elev_ang=90, en_elev_ang=0, time=10):
 	'''Calls the make movie rotanimate function and makes a move with the specified 
 	azim pts, elev pts, filename, and fps
+	
+	Parameters:
+	
+	x : x points array
+	
+	y : y points array
+	
+	z : z points array
+	
+	image : the numpy array of the image
+	
+	file : str, the name of the movie created
+	
+	fps : int, frames per second of the movie
+	
+	st_ang : float, initial viewing angle (azim)
+	
+	en_ang : float end viewing angle (azim)
+	
+	st_elev_ang : initial elevation angle, straight down is 90, side is 0
+	
+	en_elev_ang : end elevation angle
+	
+	time : duration of the film in seconds
 	'''
 	
 	print('making movie...')
@@ -256,19 +354,50 @@ def make_movie(x, y, z, image, file='movie.gif', fps=30, st_ang=0, en_ang=360, s
 	makeMovie.rotanimate(ax, file, azim, elev, fps=fps)
 
 def log_scale(intensity, scale_factor, minimum_intensity_threshold):
-	#logarithmic scale function, can be used below when creating pts.
+	'''
+	logarithmic scale function, can be used in add_function when creating pts.
+	
+	Parameters:
+	
+	intensity : float, the points intensity value
+	
+	scale_factor : float, the max addition of the prominence
+	
+	minimum_intensity_threshold : float, the min value the intensity must be to not be 
+	set to 0
+	
+	returns the scaled value (float)
+	'''
 	return ((scale_factor * ((10.**((intensity - minimum_intensity_threshold) 
 	/ (1. - minimum_intensity_threshold))) - 1)) * (1./9.))
 
 def scale(intensity, scale_factor, minimum_intensity_threshold, exp=1):
-	#scale function can be exponential, used below to make pts.
+	'''scale function can be exponential, used in add_function below to make pts.
+	
+	Parameters:
+	
+	intensity : the points intensity value
+	
+	scale_factor : the max addition of the prominence
+	
+	minimum_intensity_threshold : the min value the intensity must be to not be set to 0
+	
+	exp : float, the exponent that all points are brought to the power of
+	
+	returns the scaled value
+	'''
 	return (scale_factor * ((intensity - minimum_intensity_threshold) 
 	/ (1. - minimum_intensity_threshold))**exp)
 
 def init3D_shape(r_len, xDimen, yDimen, xDimen_len, yDimen_len, centerY_len, centerX_len, 
 len_per_pixel, scale_factor, minimum_intensity_threshold):
-	'''This creates the initial 3D shape of the hemisphere that will then be modified with
-	intensity values to create the protrusions'''
+	'''
+	This creates the initial 3D shape of the hemisphere that will then be modified with
+	intensity values to create the protrusions. This should only be used with the 
+	image_to_xyz_mesh, all parameters are the same
+	
+	Returns the initial hemisphere protruding from a plane in x, y, z array form
+	'''
 	
 	print('creating hemisphere...')
 
@@ -299,11 +428,16 @@ len_per_pixel, scale_factor, minimum_intensity_threshold):
 	
 def add_function(len_per_pixel, xDimen, yDimen, minimum_intensity_threshold, buffer_zone, 
 centerX, centerY, image, scale_bool, r, scale_factor, exp=1., buffer=False, earth=True):
-	'''This for loop goes through all the points and determines whether or not it is on the
+	'''
+	This for loop goes through all the points and determines whether or not it is on the
 	hemisphere and whether or not the intensity surpasses the threshold. If not, then no 
 	multiplier is added. If yes then a multiplier is created based on the intensity of 
 	that pixel It also used a minimum intensity threshold to maintain spherical shape and
-	Normalizes the values about that threshold'''
+	Normalizes the values about that threshold. This should only be used with the 
+	image_to_xyz_mesh, all parameters are the same.
+	
+	This returns an array called add that contains the amount the prominences should come out
+	'''
 	
 	print('calculating protrusions...')
 	
@@ -341,6 +475,14 @@ centerX, centerY, image, scale_bool, r, scale_factor, exp=1., buffer=False, eart
 	
 def final_height_addition(xDimen, yDimen, centerX, centerY, centerX_len, centerY_len, 
 r_len, r, x_init, y_init, z_init, add):
+	'''
+	This goes through all the points and combines the x, y, z arrays with the add array
+	in a way that remains normal along the hemisphere and is proportional to the intensity
+	of the pixels. This should only be used with the image_to_xyz_mesh, all parameters are
+	the same
+
+	This returns the finalized x, y, z arrays
+	'''
 
 	print('adding protrusions...')
 
@@ -378,8 +520,14 @@ r_len, r, x_init, y_init, z_init, add):
 	return x, y, z
 	
 def retrieve_image(date):
-	'''This uses the imageFinder.file_finder in order to get an image from the date and 
-	then normalize the data'''
+	'''
+	This uses the imageFinder.file_finder in order to get an image from the date and 
+	then normalize the data
+	
+	Parameters:
+	 
+	date : str, the date of the image
+	'''
 	
 	#calling imageFinder program to find the image of the set date
 	data, header = imageFinder.file_finder(date)
@@ -395,7 +543,7 @@ def retrieve_image(date):
 	
 	return image, header
 	
-def image_to_stl_mesh(date, r=925, base_len=100., offset_x=0, offset_y=0, 
+def image_to_xyz_mesh(date, r=925, base_len=100., offset_x=0, offset_y=0, 
 scale_factor_percent=0.25, minimum_intensity_threshold=0.35, buffer_zone=0., buffer=False,
 exp=1., scale_bool=True, earth=True):
 	'''
@@ -471,11 +619,33 @@ exp=1., scale_bool=True, earth=True):
 	r_len, r, x_init, y_init, z_init, add)
 	
 	return x, y, z
+	
+def image_to_flat_stl(date, scale=100., width=100., depth=100., height=20.):
+	'''
+	this turns an xrt image from a given date into a flat 3D model so that it has
+	 prominences but does not have a hemispherical nature
+	 
+	 Parameters:
+	 
+	 date : str, 'YYYY/MM/DD' date that the image is from
+	 
+	 scale : float, the percent ratio of the actual height vs the original height. A scale
+	 of 150 turns a height into 1.5 times more when compared to width than originally.
+	 
+	 width : float, max width in mm
+	 
+	 depth : float, max depth in mm
+	 
+	 height : float, max height in mm
+	 '''
+
+	image = retrieve_image(date)
+	stl_flat_maker(image, scale=scale, width=width, depth=depth, height=height)
 
 date = '2018/05/16'
 r = 460.
 
-x, y, z = image_to_stl_mesh(date, r=r, base_len=228.6, offset_x=0., offset_y=0., 
+x, y, z = image_to_xyz_mesh(date, r=r, base_len=228.6, offset_x=0., offset_y=0., 
 scale_factor_percent=0.25, minimum_intensity_threshold=0.5, buffer_zone=50., buffer=True,
 exp=2.0, scale_bool=True, earth=True)
 
