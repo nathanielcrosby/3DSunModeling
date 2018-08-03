@@ -17,10 +17,11 @@ def km_per_pixel(arcs_per_pix=1.):
 	return km_per_pixel
 	
 def stl_file_maker(data, interval=1.5, threshold=0.35):
-
-	'''This uses the stl_tools numpy2stl in order to convert an array into a 3D printable
+	'''
+	This uses the stl_tools numpy2stl in order to convert an array into a 3D printable
 	model. This cannot take xyz dimensions and cannot make the full 3D model. It makes the
-	2D image 3D printable.'''
+	2D image 3D printable.
+	'''
 	
 	earth_radius_px = earth_radius / km_per_pixel 
 	
