@@ -63,7 +63,7 @@ def file_finder(date):
 	
 	#picks first image in first directory
 	Hname = str(dirname[0][1][0])
-	filename = str(dirname[1][2][0])
+	filename = str(dirname[1][2][1])
 	#uses sunpy to read .jp2 file into data and header
 	data = io.read_file('solar.physics.montana.edu/HINODE/XRT/SCIA/synop_official/'
 	+date_file+Hname+'/'+filename)

@@ -13,7 +13,7 @@ from stl import mesh
 from scipy.misc import imresize
 from scipy.ndimage import gaussian_filter
 
-def km_per_pixel(arcs_per_pix = 1.):
+def km_per_pixel(arcs_per_pix=1.):
 	'''this uses known values to approximate the number of km per pixel'''
 	
 	dist_earth_to_sun = 151000000. #in km, changes depending on time
@@ -298,7 +298,7 @@ len_per_pixel, scale_factor, minimum_intensity_threshold):
 	return x_init, y_init, z_init
 	
 def add_function(len_per_pixel, xDimen, yDimen, minimum_intensity_threshold, buffer_zone, 
-centerX, centerY, image, scale_bool, r, scale_factor, exp=1., buffer=False):
+centerX, centerY, image, scale_bool, r, scale_factor, exp=1., buffer=False, earth=True):
 	'''This for loop goes through all the points and determines whether or not it is on the
 	hemisphere and whether or not the intensity surpasses the threshold. If not, then no 
 	multiplier is added. If yes then a multiplier is created based on the intensity of 
@@ -307,23 +307,34 @@ centerX, centerY, image, scale_bool, r, scale_factor, exp=1., buffer=False):
 	
 	print('calculating protrusions...')
 	
+	sun_radius = 432169.
+	earth_radius = 6371. #km
+	earth_scale_y = 35
+	earth_scale_x = image.shape[1] - 35
+	earth_radius_px = (earth_radius / sun_radius) * r
+	
 	add = []
 
 	for xpoint in range(xDimen):
 		row = []
 		for ypoint in range(yDimen):
-			 if ((image[xpoint][ypoint] < minimum_intensity_threshold) 
-			 or ((buffer==True) & (np.sqrt((xpoint-centerX)**2 + (ypoint-centerY)**2) < r) 
-			 & ((np.sqrt((xpoint-centerX)**2 + (ypoint-centerY)**2) 
-			 > (r - buffer_zone))))):
-				row.append(0)
-			 else:
-			 	if(scale_bool):
-					row.append(scale(image[xpoint][ypoint], scale_factor, 
-					minimum_intensity_threshold, exp=exp))
-				else:
-					row.append(log_scale(image[xpoint][ypoint], scale_factor, 
-					minimum_intensity_threshold))
+			
+			if ((buffer==True) and (np.sqrt((xpoint-centerX)**2 + (ypoint-centerY)**2) < r) 
+			and (np.sqrt((xpoint-centerX)**2 + (ypoint-centerY)**2) 
+			> (r - buffer_zone))):
+				image[xpoint][ypoint]=(float(image[xpoint][ypoint]) / 1.1)
+	
+			if (earth) & (np.sqrt((xpoint - earth_scale_x)**2 
+			+ (ypoint - earth_scale_y)**2) <= earth_radius_px):
+				row.append(.05 * scale_factor)
+			elif ((image[xpoint][ypoint] < minimum_intensity_threshold)):
+			 	row.append(0)			
+			elif(scale_bool):
+				row.append(scale(image[xpoint][ypoint], scale_factor, 
+				minimum_intensity_threshold, exp=exp))
+			else:
+				row.append(log_scale(image[xpoint][ypoint], scale_factor, 
+				minimum_intensity_threshold))
 		add.append(row)
 	
 	return add
@@ -386,7 +397,7 @@ def retrieve_image(date):
 	
 def image_to_stl_mesh(date, r=925, base_len=100., offset_x=0, offset_y=0, 
 scale_factor_percent=0.25, minimum_intensity_threshold=0.35, buffer_zone=0., buffer=False,
-exp=1., scale_bool=True):
+exp=1., scale_bool=True, earth=True):
 	'''
 	This turns an image from the given date into a 3D printable stl file
 	
@@ -410,8 +421,8 @@ exp=1., scale_bool=True):
 		has to surpass in order to show up as a prominence and not be set to zero
 		
 		buffer_zone : int, the amount in pixels that within the hemisphere around the outer 
-		edge that is set to 0 as a buffer to prevent a potentially misshapen or warped
-		hemisphere 
+		edge that is set to intensity/1.1 to scale down and act as a buffer to prevent a 
+		potentially misshapen or warped hemisphere 
 		
 		buffer : boolean, determines whether or not the buffer_zone will exist
 		
@@ -420,6 +431,8 @@ exp=1., scale_bool=True):
 		
 		scale_bool : boolean, if true, the scaling is exponential (based on exp), if false, 
 		the scaling is logarithmic
+		
+		earth : bool, draw earth to scale in the corner
 	'''
 	
 	image, header = retrieve_image(date)
@@ -451,18 +464,19 @@ exp=1., scale_bool=True):
 	centerY_len, centerX_len, len_per_pixel, scale_factor, minimum_intensity_threshold)
 
 	add = add_function(len_per_pixel, xDimen, yDimen, minimum_intensity_threshold, 
-	buffer_zone, centerX, centerY, image, scale_bool, r, scale_factor, exp=exp, buffer=True)
+	buffer_zone, centerX, centerY, image, scale_bool, r, scale_factor, 
+	exp=exp, buffer=buffer, earth=earth)
 
 	x, y, z = final_height_addition(xDimen, yDimen, centerX, centerY, centerX_len, centerY_len, 
 	r_len, r, x_init, y_init, z_init, add)
 	
 	return x, y, z
 
-date = '2007/02/02'
-r = 925.
+date = '2018/05/16'
+r = 460.
 
-image_to_stl_mesh(date, r=r, base_len=100., offset_x=30, offset_y=-30, 
-scale_factor_percent=0.25, minimum_intensity_threshold=0.35, buffer_zone=0., buffer=False,
-exp=1.3, scale_bool=True)
+x, y, z = image_to_stl_mesh(date, r=r, base_len=228.6, offset_x=0., offset_y=0., 
+scale_factor_percent=0.25, minimum_intensity_threshold=0.5, buffer_zone=50., buffer=True,
+exp=2.0, scale_bool=True, earth=True)
 
-stl_mesh_maker(x, y, z, interval=4, fname='test1.stl')
+stl_mesh_maker(x, y, z, interval=2, fname='test1.stl')
