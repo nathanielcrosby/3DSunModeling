@@ -12,6 +12,7 @@ from stl_tools import numpy2stl
 from stl import mesh
 from scipy.misc import imresize
 from scipy.ndimage import gaussian_filter
+from skimage.transform import resize
 
 def km_per_pixel(arcs_per_pix=1.):
 	'''
@@ -61,7 +62,7 @@ def stl_flat_maker(data, scale=100, width=100, depth=100, height=20):
 	numpy2stl(data, '~/Desktop/test.stl', scale=scale, solid=True, max_width=width, 
 	max_depth=depth, max_height=height)	
 
-def stl_mesh_maker(x, y, z, interval=2, fname='test1.stl'):
+def stl_mesh_maker(x, y, z, interval=1, fname='test1.stl'):
 	'''
 	This uses the stl mesh.Mesh in order to turn the x, y, and z arrays into a single 
 	array with 3 pts each. It then turns it into vectors by taking 2 adjacent points. Used
@@ -304,7 +305,8 @@ def ThreeDPlot(x, y, z, image, stride=10, figx=10., figy=10., save=False, file='
 		
 	plt.show()
 
-def make_movie(x, y, z, image, file='movie.gif', fps=30, st_ang=0, en_ang=360, st_elev_ang=90, en_elev_ang=0, time=10):
+def make_movie(x, y, z, image, file='movie.gif', fps=30, st_ang=0, en_ang=360, 
+st_elev_ang=90, en_elev_ang=0, time=10):
 	'''Calls the make movie rotanimate function and makes a move with the specified 
 	azim pts, elev pts, filename, and fps
 	
@@ -545,7 +547,7 @@ def retrieve_image(date):
 	
 def image_to_xyz_mesh(date, r=925, base_len=100., offset_x=0, offset_y=0, 
 scale_factor_percent=0.25, minimum_intensity_threshold=0.35, buffer_zone=0., buffer=False,
-exp=1., scale_bool=True, earth=True):
+exp=1., scale_bool=True, earth=True, interval=2.):
 	'''
 	This turns an image from the given date into a 3D printable stl file
 	
@@ -553,7 +555,8 @@ exp=1., scale_bool=True, earth=True):
 	
 		date : str, 'YYYY/MM/DD', date of the image
 		
-		r : float, radius of the sun in px, determines size of hemisphere
+		r : float, radius of the sun in px, determines size of hemisphere 
+		for 1024x1024 r~460, for 2048x2048 r~925, no need to scale based on interval value		
 		
 		base_len : float, determines the length of the stl file base in mm
 		
@@ -581,9 +584,15 @@ exp=1., scale_bool=True, earth=True):
 		the scaling is logarithmic
 		
 		earth : bool, draw earth to scale in the corner
+		
+		interval : float, interval at which points are taken from the image
 	'''
 	
-	image, header = retrieve_image(date)
+	image_raw, header = retrieve_image(date)
+	
+	image = image_raw#resize(image_raw, (int(image_raw.shape[0] / interval), int(image_raw.shape[1] / interval)))
+	
+	r = r #/ interval
 	
 	#pixel dimensions of the image
 	xDimen = image.shape[0]
@@ -618,7 +627,7 @@ exp=1., scale_bool=True, earth=True):
 	x, y, z = final_height_addition(xDimen, yDimen, centerX, centerY, centerX_len, centerY_len, 
 	r_len, r, x_init, y_init, z_init, add)
 	
-	return x, y, z
+	return image_raw, header, x, y, z
 	
 def image_to_flat_stl(date, scale=100., width=100., depth=100., height=20.):
 	'''
@@ -645,8 +654,8 @@ def image_to_flat_stl(date, scale=100., width=100., depth=100., height=20.):
 date = '2018/05/16'
 r = 460.
 
-x, y, z = image_to_xyz_mesh(date, r=r, base_len=228.6, offset_x=0., offset_y=0., 
+image, header, x, y, z = image_to_xyz_mesh(date, r=r, base_len=228.6, offset_x=0., offset_y=0., 
 scale_factor_percent=0.25, minimum_intensity_threshold=0.5, buffer_zone=50., buffer=True,
-exp=2.0, scale_bool=True, earth=True)
+exp=2.0, scale_bool=True, earth=True, interval=1.)
 
-stl_mesh_maker(x, y, z, interval=2, fname='test1.stl')
+stl_mesh_maker(x, y, z, interval=1, fname='test1.stl')
