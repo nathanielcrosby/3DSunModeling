@@ -521,7 +521,7 @@ r_len, r, x_init, y_init, z_init, add):
 	
 	return x, y, z
 	
-def retrieve_image(date):
+def retrieve_image(date, local=True, index=0):
 	'''
 	This uses the imageFinder.file_finder in order to get an image from the date and 
 	then normalize the data
@@ -529,10 +529,16 @@ def retrieve_image(date):
 	Parameters:
 	 
 	date : str, the date of the image
+	
+	local : boolean, if you're in the cfa system and/or have access to 
+		/archive/hinode/xrt/level2/synoptics folder
+		
+	index : int, index of the jp2 image if a specific image is desired, otherwise the 
+		first is taken 
 	'''
 	
 	#calling imageFinder program to find the image of the set date
-	data, header = imageFinder.file_finder(date)
+	data, header = imageFinder.file_finder(date, local=local, index=index)
 	
 	image = data[0][0] #gets the data from the jp2 file, however this format does not work 
 	#with the the plot surface, instead it is converted to a png in an oustide program
@@ -547,7 +553,7 @@ def retrieve_image(date):
 	
 def image_to_xyz_mesh(date, r=925, base_len=100., offset_x=0, offset_y=0, 
 scale_factor_percent=0.25, minimum_intensity_threshold=0.35, buffer_zone=0., buffer=False,
-exp=1., scale_bool=True, earth=True, interval=2.):
+exp=1., scale_bool=True, earth=True, interval=2., local=True, index=0):
 	'''
 	This turns an image from the given date into a 3D printable stl file
 	
@@ -586,13 +592,21 @@ exp=1., scale_bool=True, earth=True, interval=2.):
 		earth : bool, draw earth to scale in the corner
 		
 		interval : float, interval at which points are taken from the image
+		
+		local : boolean, if you're in the cfa system and/or have access to 
+		/archive/hinode/xrt/level2/synoptics folder
+		
+		index : int, index of the jp2 image if a specific image is desired, otherwise the 
+		first is taken 
 	'''
 	
-	image_raw, header = retrieve_image(date)
+	image_raw, header = retrieve_image(date, local=local, index=index)
 	
-	image = image_raw#resize(image_raw, (int(image_raw.shape[0] / interval), int(image_raw.shape[1] / interval)))
+	image = resize(image_raw, (int(image_raw.shape[0] / interval), int(image_raw.shape[1] / interval)))
 	
-	r = r #/ interval
+	r = r / interval
+	
+	buffer_zone = buffer_zone / interval
 	
 	#pixel dimensions of the image
 	xDimen = image.shape[0]
@@ -651,11 +665,11 @@ def image_to_flat_stl(date, scale=100., width=100., depth=100., height=20.):
 	image = retrieve_image(date)
 	stl_flat_maker(image, scale=scale, width=width, depth=depth, height=height)
 
-date = '2018/05/16'
+date = '2016/05/16'
 r = 460.
 
 image, header, x, y, z = image_to_xyz_mesh(date, r=r, base_len=228.6, offset_x=0., offset_y=0., 
-scale_factor_percent=0.25, minimum_intensity_threshold=0.5, buffer_zone=50., buffer=True,
-exp=2.0, scale_bool=True, earth=True, interval=1.)
+scale_factor_percent=0.25, minimum_intensity_threshold=0.45, buffer_zone=20., buffer=True,
+exp=2.0, scale_bool=True, earth=True, interval=2., local=True, index=1)
 
 stl_mesh_maker(x, y, z, interval=1, fname='test1.stl')
