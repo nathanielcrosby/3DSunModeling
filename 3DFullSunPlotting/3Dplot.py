@@ -583,6 +583,8 @@ buffer=False, exp=1., scale_bool=True, earth=True, interval=2., local=True, inde
 		edge that is set to intensity/1.1 to scale down and act as a buffer to prevent a 
 		potentially misshapen or warped hemisphere 
 		
+		buffer_val : float, the amount that the points in the buffer are divided by
+		
 		buffer : boolean, determines whether or not the buffer_zone will exist
 		
 		exp : float, the exponent that all of the intensities are taken to the power of 
@@ -599,7 +601,9 @@ buffer=False, exp=1., scale_bool=True, earth=True, interval=2., local=True, inde
 		/archive/hinode/xrt/level2/synoptics folder
 		
 		index : int, index of the jp2 image if a specific image is desired, otherwise the 
-		first is taken 
+		first is taken
+		
+		flat_base : boolean, whether or not the base should have prominences or just be flat 
 	'''
 	
 	image_raw, header = retrieve_image(date, local=local, index=index)
@@ -667,11 +671,11 @@ def image_to_flat_stl(date, scale=100., width=100., depth=100., height=20.):
 	image = retrieve_image(date)
 	stl_flat_maker(image, scale=scale, width=width, depth=depth, height=height)
 
-date = '2010/05/16'
+date = '2014/05/16'
 r = 460.
 
 image, header, x, y, z = image_to_xyz_mesh(date, r=r, base_len=228.6, offset_x=0., offset_y=0., 
-scale_factor_percent=0.25, minimum_intensity_threshold=0.5, buffer_zone=100., buffer_val=1.15,
-buffer=True, exp=2.0, scale_bool=True, earth=True, interval=2., local=True, index=1, flat_base=True)
+scale_factor_percent=0.25, minimum_intensity_threshold=0.45, buffer_zone=0., buffer_val=1.1,
+buffer=True, exp=2.0, scale_bool=True, earth=True, interval=2., local=True, index=2, flat_base=False)
 
 stl_mesh_maker(x, y, z, interval=1, fname='test1.stl')
