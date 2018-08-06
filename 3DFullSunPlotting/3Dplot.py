@@ -428,8 +428,8 @@ len_per_pixel, scale_factor, minimum_intensity_threshold):
 	z_init = np.asarray(zlist)
 	return x_init, y_init, z_init
 	
-def add_function(len_per_pixel, xDimen, yDimen, minimum_intensity_threshold, buffer_zone, 
-centerX, centerY, image, scale_bool, r, scale_factor, exp=1., buffer=False, earth=True):
+def add_function(len_per_pixel, xDimen, yDimen, minimum_intensity_threshold, buffer_zone,
+centerX, centerY, image, scale_bool, r, scale_factor, exp=1., buffer=False, earth=True, buffer_val=1.1, flat_base=False):
 	'''
 	This for loop goes through all the points and determines whether or not it is on the
 	hemisphere and whether or not the intensity surpasses the threshold. If not, then no 
@@ -455,16 +455,18 @@ centerX, centerY, image, scale_bool, r, scale_factor, exp=1., buffer=False, eart
 		row = []
 		for ypoint in range(yDimen):
 			
-			if ((buffer==True) and (np.sqrt((xpoint-centerX)**2 + (ypoint-centerY)**2) < r) 
-			and (np.sqrt((xpoint-centerX)**2 + (ypoint-centerY)**2) 
+			if ((buffer) and (np.sqrt((xpoint-centerX)**2 + (ypoint-centerY)**2) 
 			> (r - buffer_zone))):
-				image[xpoint][ypoint]=(float(image[xpoint][ypoint]) / 1.1)
+				image[xpoint][ypoint]=(float(image[xpoint][ypoint]) / buffer_val)
 	
 			if (earth) & (np.sqrt((xpoint - earth_scale_x)**2 
 			+ (ypoint - earth_scale_y)**2) <= earth_radius_px):
 				row.append(.05 * scale_factor)
+			elif ((flat_base) & (np.sqrt((xpoint-centerX)**2 + (ypoint-centerY)**2) 
+			> (r))):
+				row.append(0.)
 			elif ((image[xpoint][ypoint] < minimum_intensity_threshold)):
-			 	row.append(0)			
+			 	row.append(0.)			
 			elif(scale_bool):
 				row.append(scale(image[xpoint][ypoint], scale_factor, 
 				minimum_intensity_threshold, exp=exp))
@@ -552,8 +554,8 @@ def retrieve_image(date, local=True, index=0):
 	return image, header
 	
 def image_to_xyz_mesh(date, r=925, base_len=100., offset_x=0, offset_y=0, 
-scale_factor_percent=0.25, minimum_intensity_threshold=0.35, buffer_zone=0., buffer=False,
-exp=1., scale_bool=True, earth=True, interval=2., local=True, index=0):
+scale_factor_percent=0.25, minimum_intensity_threshold=0.35, buffer_zone=0., buffer_val=1.1,
+buffer=False, exp=1., scale_bool=True, earth=True, interval=2., local=True, index=0, flat_base=False):
 	'''
 	This turns an image from the given date into a 3D printable stl file
 	
@@ -636,7 +638,7 @@ exp=1., scale_bool=True, earth=True, interval=2., local=True, index=0):
 
 	add = add_function(len_per_pixel, xDimen, yDimen, minimum_intensity_threshold, 
 	buffer_zone, centerX, centerY, image, scale_bool, r, scale_factor, 
-	exp=exp, buffer=buffer, earth=earth)
+	exp=exp, buffer=buffer, earth=earth, buffer_val=buffer_val, flat_base=flat_base)
 
 	x, y, z = final_height_addition(xDimen, yDimen, centerX, centerY, centerX_len, centerY_len, 
 	r_len, r, x_init, y_init, z_init, add)
@@ -665,11 +667,11 @@ def image_to_flat_stl(date, scale=100., width=100., depth=100., height=20.):
 	image = retrieve_image(date)
 	stl_flat_maker(image, scale=scale, width=width, depth=depth, height=height)
 
-date = '2016/05/16'
+date = '2010/05/16'
 r = 460.
 
 image, header, x, y, z = image_to_xyz_mesh(date, r=r, base_len=228.6, offset_x=0., offset_y=0., 
-scale_factor_percent=0.25, minimum_intensity_threshold=0.45, buffer_zone=20., buffer=True,
-exp=2.0, scale_bool=True, earth=True, interval=2., local=True, index=1)
+scale_factor_percent=0.25, minimum_intensity_threshold=0.5, buffer_zone=100., buffer_val=1.15,
+buffer=True, exp=2.0, scale_bool=True, earth=True, interval=2., local=True, index=1, flat_base=True)
 
 stl_mesh_maker(x, y, z, interval=1, fname='test1.stl')
