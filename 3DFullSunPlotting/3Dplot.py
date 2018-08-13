@@ -429,7 +429,7 @@ len_per_pixel, scale_factor, minimum_intensity_threshold):
 	return x_init, y_init, z_init
 	
 def add_function(len_per_pixel, xDimen, yDimen, minimum_intensity_threshold, buffer_zone,
-centerX, centerY, image, scale_bool, r, scale_factor, exp=1., buffer=False, earth=True, buffer_val=1.1, flat_base=False):
+centerX, centerY, image, scale_bool, r, scale_factor, exp=1., buffer=False, earth=True, border_width = 2, buffer_val=1.1, flat_base=False):
 	'''
 	This for loop goes through all the points and determines whether or not it is on the
 	hemisphere and whether or not the intensity surpasses the threshold. If not, then no 
@@ -448,6 +448,7 @@ centerX, centerY, image, scale_bool, r, scale_factor, exp=1., buffer=False, eart
 	earth_scale_y = 35
 	earth_scale_x = image.shape[1] - 35
 	earth_radius_px = (earth_radius / sun_radius) * r
+	earth_box = border_width
 	
 	add = []
 
@@ -459,9 +460,13 @@ centerX, centerY, image, scale_bool, r, scale_factor, exp=1., buffer=False, eart
 			> (r - buffer_zone))):
 				image[xpoint][ypoint]=(float(image[xpoint][ypoint]) / buffer_val)
 	
-			if (earth) & (np.sqrt((xpoint - earth_scale_x)**2 
-			+ (ypoint - earth_scale_y)**2) <= earth_radius_px):
-				row.append(.05 * scale_factor)
+			if (earth):
+				if (np.sqrt((xpoint - earth_scale_x)**2 
+				+ (ypoint - earth_scale_y)**2) <= earth_radius_px):
+					row.append(.1 * scale_factor)
+				elif (((np.absolute(xpoint - (earth_scale_x - earth_scale_y)) < earth_box) & (ypoint < (2. * earth_scale_y))) 
+				or (((np.absolute(ypoint - (2. * earth_scale_y)) < earth_box)) & (xpoint > (earth_scale_x - earth_scale_y)))):
+					row.append(.05 * scale_factor)
 			elif ((flat_base) & (np.sqrt((xpoint-centerX)**2 + (ypoint-centerY)**2) 
 			> (r))):
 				row.append(0.)
@@ -555,7 +560,7 @@ def retrieve_image(date, local=True, index=0):
 	
 def image_to_xyz_mesh(date, r=925, base_len=100., offset_x=0, offset_y=0, 
 scale_factor_percent=0.25, minimum_intensity_threshold=0.35, buffer_zone=0., buffer_val=1.1,
-buffer=False, exp=1., scale_bool=True, earth=True, interval=2., local=True, index=0, flat_base=False):
+buffer=False, exp=1., scale_bool=True, earth=True, border_width=2, interval=2., local=True, index=0, flat_base=False):
 	'''
 	This turns an image from the given date into a 3D printable stl file
 	
@@ -594,6 +599,8 @@ buffer=False, exp=1., scale_bool=True, earth=True, interval=2., local=True, inde
 		the scaling is logarithmic
 		
 		earth : bool, draw earth to scale in the corner
+
+		border_width : int, width of border around the earth to scale
 		
 		interval : float, interval at which points are taken from the image
 		
@@ -642,7 +649,7 @@ buffer=False, exp=1., scale_bool=True, earth=True, interval=2., local=True, inde
 
 	add = add_function(len_per_pixel, xDimen, yDimen, minimum_intensity_threshold, 
 	buffer_zone, centerX, centerY, image, scale_bool, r, scale_factor, 
-	exp=exp, buffer=buffer, earth=earth, buffer_val=buffer_val, flat_base=flat_base)
+	exp=exp, buffer=buffer, earth=earth, border_width=border_width, buffer_val=buffer_val, flat_base=flat_base)
 
 	x, y, z = final_height_addition(xDimen, yDimen, centerX, centerY, centerX_len, centerY_len, 
 	r_len, r, x_init, y_init, z_init, add)

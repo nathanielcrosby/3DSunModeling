@@ -28,8 +28,10 @@ def stl_file_maker(data, interval=1.5, threshold=0.35):
 	for xpoint in range(data.shape[0]):
 		for ypoint in range(data.shape[1]):
 			if (np.sqrt((xpoint - earth_scale_x)**2 + (ypoint - earth_scale_y)**2) <= earth_radius_px):
+				data[xpoint][ypoint] = 0.1
+			elif (((np.absolute(xpoint - (earth_scale_x - earth_scale_y)) < earth_box) & (ypoint < (2. * earth_scale_y))) 
+				or (((np.absolute(ypoint - (2. * earth_scale_y)) < earth_box)) & (xpoint > (earth_scale_x - earth_scale_y)))):
 				data[xpoint][ypoint] = 0.05
-
 			elif (data[xpoint][ypoint] <= threshold):
 				data[xpoint][ypoint] = 0
 			else:
@@ -41,7 +43,7 @@ def stl_file_maker(data, interval=1.5, threshold=0.35):
 	
 	#dimensions in mm, if scale = 100, then the dimensions will be exact
 	numpy2stl(data, 'test.stl', scale=100, solid=True, max_width=228.6, 
-	max_depth=228.6, max_height=60, force_python=True)	
+	max_depth=228.6, max_height=80, force_python=True)	
 
 	
 def TwoDPlot(fig):
@@ -70,13 +72,14 @@ km_per_pixel = km_per_pixel(arcs_per_pix=header[0].__getitem__('IMSCL_MP'))
 
 earth_scale_y = 35
 earth_scale_x = image.shape[1] - 35 #px
+earth_box = 2
 
 #creates figure
 fig = plt.figure(figsize=(10.,10.))
 
 TwoDPlot(fig)
 
-stl_file_maker(image, interval=1.5)
+stl_file_maker(image, interval=2)
 
 #closes all plots
 #plt.close('all')
