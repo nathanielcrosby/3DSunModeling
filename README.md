@@ -19,4 +19,57 @@ These are to be used for educational purposes, specifically for the visually imp
 ### Installing
   Still working on making into an actual library...
   
+### Examples
+3D Full Sun .stl File
+  '''
+  date = '2014/05/16'
+  r = 460. #px
+
+  image, header, x, y, z = 3DSunModeling.3DPlot.image_to_xyz_mesh(date, r=r, base_len=228.6, offset_x=0., offset_y=0., 
+  scale_factor_percent=0.25, minimum_intensity_threshold=0.45, buffer_zone=0., buffer_val=1.1,
+  buffer=True, exp=2.0, scale_bool=True, earth=True, interval=2., local=True, index=2, flat_base=False)
+
+  3DSunModeling.3DPlot.stl_mesh_maker(x, y, z, interval=1, fname='test1.stl')
+  '''
+  
+  3D Full Sun Movie
+  '''
+  date = '2014/05/16'
+  r = 460. #px
+
+  image, header, x, y, z = 3DSunModeling.3DPlot.image_to_xyz_mesh(date, r=r, base_len=228.6, offset_x=0., offset_y=0., 
+  scale_factor_percent=0.25, minimum_intensity_threshold=0.45, buffer_zone=0., buffer_val=1.1,
+  buffer=True, exp=2.0, scale_bool=True, earth=True, interval=2., local=True, index=2, flat_base=False)
+  
+  3DSunModeling.3DPlot.make_movie(x, y, z, image, file='movie.gif', fps=30, st_ang=0, en_ang=360, 
+  st_elev_ang=90, en_elev_ang=0, time=10)
+  '''
+  
+  3D Full Sun 3D Plot
+  '''
+  date = '2014/05/16'
+  r = 460. #px
+
+  image, header, x, y, z = 3DSunModeling.3DPlot.image_to_xyz_mesh(date, r=r, base_len=228.6, offset_x=0., offset_y=0., 
+  scale_factor_percent=0.25, minimum_intensity_threshold=0.45, buffer_zone=0., buffer_val=1.1,
+  buffer=True, exp=2.0, scale_bool=True, earth=True, interval=2., local=True, index=2, flat_base=False) 
+  
+  3DSunModeling.3DPlot.ThreeDPlot(x, y, z, image, stride=10, figx=10., figy=10., save=False, file='3d.png')
+  '''
+  
+  2D Full Sun .stl File
+  '''
+  date = '2014/05/16'
+  r = 460. #px
+
+  image, header, x, y, z = 3DSunModeling.3DPlot.image_to_xyz_mesh(date, r=r, base_len=228.6, offset_x=0., offset_y=0., 
+  scale_factor_percent=0.25, minimum_intensity_threshold=0.45, buffer_zone=0., buffer_val=1.1,
+  buffer=True, exp=2.0, scale_bool=True, earth=True, interval=2., local=True, index=2, flat_base=False) 
+  
+  3DSunModeling.3DPlot.image_to_flat_stl(date, scale=100., width=100., depth=100., height=20.)
+  '''
+  
+### Authors
+  Nathaniel Crosby
+  
 
