@@ -31,34 +31,34 @@ All Commands Start With:
 ```
 To Do any of the Following just add these lines:
 
-3D Full Sun .stl File
+3D Full Sun .stl File:
   ```
   3DSunModeling.3DFullSunPlotting.3DPlot.stl_mesh_maker(x, y, z, interval=1, fname='test1.stl')
   ```
   
-  3D Full Sun Movie
+  3D Full Sun Movie:
   ```
   3DSunModeling.3DFullSunPlotting.3DPlot.make_movie(x, y, z, image, file='movie.gif', fps=30, st_ang=0, en_ang=360, 
   st_elev_ang=90, en_elev_ang=0, time=10)
   ```
   
-  3D Full Sun 3D Plot
+  3D Full Sun 3D Plot:
   ```
   3DSunModeling.3DFullSunPlotting.3DPlot.ThreeDPlot(x, y, z, image, stride=10, figx=10., figy=10., save=False, file='3d.png')
   ```
   
-  2D Full Sun .stl File
+  2D Full Sun .stl File:
   ```
   3DSunModeling.3DFullSunPlotting.3DPlot.image_to_flat_stl(date, scale=100., width=100., depth=100., height=20.)
   ```
   
-  2D Partial Sun .stl File
+  2D Partial Sun .stl File:
   ```
   file = '2012_04_16__17_38_56_12__SDO_AIA_AIA_304' #.png
   3DSunModeling.3DPartialSunPlotting.ImagePlot.stl_file_maker(file, interval=2, threshold=0.35, fname='test.stl', gaussian=1)
   ```
   
-  2D Partial Sun Plot
+  2D Partial Sun Plot:
   ```
   file = '2012_04_16__17_38_56_12__SDO_AIA_AIA_304' #.png
   3DSunModeling.3DPartialSunPlotting.ImagePlot.TwoDPlot(file, save=False)
