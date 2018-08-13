@@ -5,6 +5,7 @@ from scipy.ndimage import gaussian_filter
 import numpy as np
 import matplotlib.pyplot as plt
 import sunpy.io as io
+import subprocess
 
 def km_per_pixel(arcs_per_pix=1.):
 	#this uses known values to approximate the number of km per pixel
@@ -16,7 +17,7 @@ def km_per_pixel(arcs_per_pix=1.):
 	square_km_per_pixel = km_per_pixel**2.
 	return km_per_pixel
 	
-def stl_file_maker(data, interval=1.5, threshold=0.35):
+def stl_file_maker(data, interval=1.5, threshold=0.35, fname='test.stl'):
 	'''
 	This uses the stl_tools numpy2stl in order to convert an array into a 3D printable
 	model. This cannot take xyz dimensions and cannot make the full 3D model. It makes the
@@ -42,9 +43,10 @@ def stl_file_maker(data, interval=1.5, threshold=0.35):
 	data = gaussian_filter(data, 1)
 	
 	#dimensions in mm, if scale = 100, then the dimensions will be exact
-	numpy2stl(data, 'test.stl', scale=100, solid=True, max_width=228.6, 
+	numpy2stl(data, fname, scale=100, solid=True, max_width=228.6, 
 	max_depth=228.6, max_height=80, force_python=True)	
 
+	subprocess.call(['bash', 'filemover.sh', fname])
 	
 def TwoDPlot(fig):
 	#2D drawing of the image
@@ -79,7 +81,7 @@ fig = plt.figure(figsize=(10.,10.))
 
 TwoDPlot(fig)
 
-stl_file_maker(image, interval=2)
+stl_file_maker(image, interval=2, fname='test.stl')
 
 #closes all plots
 #plt.close('all')

@@ -13,6 +13,7 @@ from stl import mesh
 from scipy.misc import imresize
 from scipy.ndimage import gaussian_filter
 from skimage.transform import resize
+import subprocess
 
 def km_per_pixel(arcs_per_pix=1.):
 	'''
@@ -173,7 +174,7 @@ def stl_mesh_maker(x, y, z, interval=1, fname='test1.stl'):
 	
 	new_mesh = mesh.Mesh(vector_data)
 	new_mesh.save(fname)
-	return new_mesh
+	subprocess.call(['bash', 'filemover.sh', fname])
 
 def TwoDPlot(image, figx=10., figy=10., save=False, file='2d.png'):
 	'''
