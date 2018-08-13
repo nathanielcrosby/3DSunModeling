@@ -3,6 +3,7 @@ This turns 2D images of the Sun into 3D printable models in .stl file form.
 I created this while interning at the Harvard-Smithsonian Center for Astrophysics.
 It is intended to create hemispherical 3D prints of the whole sun and flat 3D prints of specific features of the sun (ex. solar flares).
 These are to be used for educational purposes, specifically for the visually impaired.
+Currently, the full Sun Model is exclusively for XRT data while the partial sun model is for any png file.
 
 ## Getting Started
  ### Prerequisites
@@ -26,7 +27,7 @@ These are to be used for educational purposes, specifically for the visually imp
    
   
 ### Examples
-All Commands Start With:
+All Full Sun Commands Start With:
 ```
   date = '2014/05/16'
   r = 460. #px
@@ -37,7 +38,7 @@ All Commands Start With:
 ```
 To Do any of the Following just add these lines:
 
-3D Full Sun .stl File:
+  3D Full Sun .stl File:
   ```
   3DSunModeling.3DFullSunPlotting.3DPlot.stl_mesh_maker(x, y, z, interval=1, fname='test1.stl')
   ```
