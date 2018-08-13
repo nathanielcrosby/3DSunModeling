@@ -6,6 +6,17 @@ These are to be used for educational purposes, specifically for the visually imp
 
 ## Getting Started
  ### Prerequisites
+  - os
+  - subprocess
+  - numpy
+  - matplotlib
+  - scipy
+  - skimage
+  - stl_tools
+  - numpy-stl
+  - imageio
+  
+### Installing
+  Still working on making into an actual library...
+  
 
-
-##3DPartialSunPlotting
