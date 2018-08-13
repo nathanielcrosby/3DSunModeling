@@ -19,6 +19,11 @@ These are to be used for educational purposes, specifically for the visually imp
 ### Installing
   Still working on making into an actual library...
   
+  In the mean time:
+   1. ```git clone https://github.com/nathanielcrosby/3DSunModeling.git``` OR Download
+   2. move the folder into your working directory
+   
+  
 ### Examples
 All Commands Start With:
 ```
