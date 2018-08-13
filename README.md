@@ -63,7 +63,7 @@ To Do any of the Following just add these lines:
   file = '2012_04_16__17_38_56_12__SDO_AIA_AIA_304' #.png
   3DSunModeling.3DPartialSunPlotting.ImagePlot.TwoDPlot(file, save=False)
   ```
-### Authors
+## Authors
   Nathaniel Crosby
   
 
