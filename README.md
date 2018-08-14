@@ -23,7 +23,7 @@ Currently, the full Sun Model is exclusively for XRT data while the partial sun 
   In the mean time:
    1. ```git clone https://github.com/nathanielcrosby/3DSunModeling.git``` OR Download
    2. move the folder into your working directory
-   3. ```import 3DSunModeling```
+   3. go into the folders to run the code as needed
    
   
 ### Examples
