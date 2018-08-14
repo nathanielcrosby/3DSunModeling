@@ -44,17 +44,17 @@ def stl_file_maker(file, interval=1.5, threshold=0.35, fname='test.stl', gaussia
 	#data = io.read_file('2014_05_27__14_38_31_12__SDO_AIA_AIA_304.jp2')	
 	header = io.read_file_header(file+'.jp2')
 
-	image = read_png(file+'.png')
+	data = read_png(file+'.png')
 
-	km_per_pixel = km_per_pixel(arcs_per_pix=header[0].__getitem__('IMSCL_MP'))
+	kim_per_pixel = km_per_pixel(arcs_per_pix=header[0].__getitem__('IMSCL_MP'))
 
 	#center points for the earth to scale figure
 
 	earth_scale_y = 35
-	earth_scale_x = image.shape[1] - 35 #px
+	earth_scale_x = data.shape[1] - 35 #px
 	earth_box = 2
 	
-	earth_radius_px = earth_radius / km_per_pixel 
+	earth_radius_px = earth_radius / kim_per_pixel 
 	
 	for xpoint in range(data.shape[0]):
 		for ypoint in range(data.shape[1]):

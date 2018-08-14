@@ -678,7 +678,7 @@ def image_to_flat_stl(date, scale=100., width=100., depth=100., height=20.):
 
 	image = retrieve_image(date)
 	stl_flat_maker(image, scale=scale, width=width, depth=depth, height=height)
-
+'''
 date = '2014/05/16'
 r = 460.
 
@@ -687,3 +687,4 @@ scale_factor_percent=0.25, minimum_intensity_threshold=0.45, buffer_zone=0., buf
 buffer=True, exp=2.0, scale_bool=True, earth=True, interval=2., local=True, index=2, flat_base=False)
 
 stl_mesh_maker(x, y, z, interval=1, fname='test1.stl')
+'''
